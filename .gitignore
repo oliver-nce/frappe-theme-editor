@@ -12,23 +12,25 @@ Thumbs.db
 # Backup/temp files
 *.bak
 *.tmp
-*copy*.html
-* copy.html
 
-# Development files not needed for app
+# Development files (not part of app)
 COLOR-EDITOR-V2.html
 COLOR-PALETTE.html
 DIVI-WIDTH-ISSUE-FINDINGS.md
 HANDOFF-REFACTORING.md
 NEUTRAL-PICKER-CODE.txt
 REFACTORING-PLAN.md
+VERSION.txt
+frappe-theme-structure.json
+dist/
+frappe-theme-editor.html
+frappe-theme-editor\ copy.html
+themes/
 
 # Python
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
-build/
 *.egg
 
 # Node (if added later)
