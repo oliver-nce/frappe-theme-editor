@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <title>NCE Design System - Frappe Theme Editor</title>
+    <link rel="stylesheet" href="theme-editor.css">
+</head>
+<body>
+    <!-- Body content loaded from separate file -->
+    <div id="app-container"></div>
+    
+    <script>
+        // Load body content
+        fetch('theme-editor-body.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('app-container').innerHTML = html;
+                // Load JS after HTML is in place
+                const script = document.createElement('script');
+                script.src = 'theme-editor.js';
+                document.body.appendChild(script);
+            })
+            .catch(err => {
+                console.error('Failed to load theme editor:', err);
+                document.getElementById('app-container').innerHTML = '<p>Error loading theme editor. Make sure you are running from a local server.</p>';
+            });
+    </script>
+</body>
+</html>

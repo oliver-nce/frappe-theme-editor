@@ -7227,36 +7227,30 @@
 
     // Global eyedropper handler
     async function handleEyedropper() {
-        // Safari on macOS: Trigger native color picker
-        if (ENV.isSafari && ENV.isMac && !('EyeDropper' in window)) {
-            const nativePicker = document.getElementById('brandColorPicker');
-            const hint = document.getElementById('eyedropperHint');
-            
-            if (nativePicker) {
-                // Show inline hint immediately
-                if (hint) hint.classList.add('show');
-                
-                // Open picker immediately
-                nativePicker.focus();
-                nativePicker.click();
-                
-                // Start fade out after 3 seconds
-                if (hint) {
-                    setTimeout(() => {
-                        hint.classList.add('fade');
-                        setTimeout(() => hint.classList.remove('show', 'fade'), 600);
-                    }, 3000);
-                }
-            }
+        // Check if EyeDropper API is available
+        if (!('EyeDropper' in window)) {
+            // Show polite browser message for Safari/Firefox users
+            document.getElementById('modalContent').innerHTML = `
+                <div class="modal-title">Eyedropper Not Available</div>
+                <div class="modal-message">
+                    The eyedropper tool requires Chrome or Edge browser.
+                    <br><br>
+                    You can still select colors using:
+                    <ul style="text-align: left; margin-top: 12px; line-height: 1.8;">
+                        <li>HSL sliders</li>
+                        <li>Color grid</li>
+                        <li>Hex input (paste color codes)</li>
+                    </ul>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" data-action="close-modal">Got it</button>
+                </div>
+            `;
+            document.getElementById('modalOverlay').classList.add('show');
             return;
         }
         
         // Chrome/Edge: Use EyeDropper API
-        if (!('EyeDropper' in window)) {
-            showNotification('EyeDropper not available in this browser');
-            return;
-        }
-        
         try {
             const eyeDropper = new EyeDropper();
             const result = await eyeDropper.open();
@@ -7291,23 +7285,10 @@
         updatePickerSliderBackgrounds();
         updatePickerUI(false);
         
-        // Show eyedropper for Chrome/Edge/Safari
-        if (ENV.hasEyeDropper || (ENV.isSafari && ENV.isMac)) {
+        // Show eyedropper only for Chrome/Edge (browsers with EyeDropper API)
+        if (ENV.hasEyeDropper) {
             if (eyedropperBtn) {
                 eyedropperBtn.classList.remove('eyedropper-hidden');
-                if (ENV.isSafari && ENV.isMac) {
-                    eyedropperBtn.title = 'Open color picker (with eyedropper)';
-                }
-            }
-            
-            // Safari: native picker updates custom picker
-            if (ENV.isSafari && ENV.isMac && !ENV.hasEyeDropper) {
-                nativePicker.addEventListener('input', function() {
-                    const newHex = this.value.toUpperCase();
-                    pickerHSV = hexToHSV(newHex);
-                    updatePickerUI(false);
-                    updatePickerSliderBackgrounds();
-                });
             }
         }
     }

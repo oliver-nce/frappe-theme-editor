@@ -1,0 +1,1387 @@
+    <div class="page-wrapper">
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>Frappe Theme Editor</h1>
+                <p>Theme editor for Frappe applications • Use Save Theme to export</p>
+            </div>
+            <div class="header-buttons">
+                <button class="btn btn-primary" data-action="copy-css">Copy CSS</button>
+                <button class="btn btn-secondary" data-action="show-modal" data-target="save">Save Theme</button>
+                <button class="btn btn-secondary" data-action="show-modal" data-target="load">Load Theme</button>
+                <button class="btn btn-secondary" data-action="show-modal" data-target="reset">Reset</button>
+            </div>
+        </div>
+        
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             FRAPPE ONLY: HTML START - Tab Navigation
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <div class="tab-nav">
+            <button class="tab-btn active" data-action="switch-tab" data-target="core">Core Theme</button>
+            <button class="tab-btn" data-action="switch-tab" data-target="frappe">Frappe Settings</button>
+        </div>
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             FRAPPE ONLY: HTML END - Tab Navigation
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             BASIC VERSION: Core Theme Content (Tab 1)
+             In basic version: remove wrapping div and class, keep content
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <div id="tab-core" class="tab-content active">
+        
+        <!-- Primary Colors -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title" data-action="toggle-editor" data-target="primary" style="cursor: pointer;">Primary Colors (<span id="primaryLabel">Blue</span> Scale) <span class="click-to-edit">Click to Edit</span></h2>
+            </div>
+            <div class="color-grid" id="primaryGrid"></div>
+            <div id="anchorLegend" style="font-size: 11px; color: #888; margin-top: 4px; display: none;">* = This is your designated brand color</div>
+
+            <div class="editor-panel-overlay hidden" id="editor-overlay" data-action="toggle-editor" data-target="primary"></div>
+            <div class="editor-panel hidden" id="editor-primary">
+                <div class="editor-drag-handle" id="editorDragHandle"></div>
+                <button class="close-editor" data-action="toggle-editor" data-target="primary">✕</button>
+                <div class="editor-row">
+                    <div class="editor-col" style="flex: 0 0 auto;">
+                        <!-- Safari: native picker row (hidden but accessible) -->
+                        <div class="brand-input-row" id="safariPickerRow">
+                            <input type="color" class="color-picker-btn" id="brandColorPicker" value="#888888">
+                            <input type="text" class="hex-input" id="brandHexInput" placeholder="Paste hex" maxlength="7">
+                            <button class="btn-apply-hex" id="applyBrandHex">Apply</button>
+                        </div>
+                        
+                        <!-- Combined Color Pickers: Brand + Neutral side by side -->
+                        <div class="color-pickers-combined">
+                            <!-- Brand Color Picker -->
+                            <div class="brand-picker-wrapper">
+                                <label class="picker-label">Brand Color</label>
+                                <div class="color-picker-panel" id="colorPickerPanel">
+                                <div class="picker-layout">
+                                    <!-- Left Column: Color Grid + Hex Row -->
+                                    <div class="picker-left-col">
+                                        <div class="color-grid-picker" id="colorGridPicker"></div>
+                                        <div class="picker-hex-row">
+                                            <input type="text" id="pickerHexInput" value="#4299F0" maxlength="7">
+                                            <button id="pickerCopyBtn" title="Copy hex">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                </svg>
+                                            </button>
+                                            <span class="copied-indicator" id="copiedIndicator">Copied</span>
+                                            <button id="pickerEyedropperBtn" class="eyedropper-hidden" title="Pick from screen" data-action="eyedropper">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="m2 22 1-1h3l9-9"></path>
+                                                    <path d="M3 21v-3l9-9"></path>
+                                                    <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4"></path>
+                                                </svg>
+                                            </button>
+                                            <span class="eyedropper-hint" id="eyedropperHint">Click "Show Colors" to access the eye dropper</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Right Column: Preview + Bump + Sliders + Apply -->
+                                    <div class="picker-right-col">
+                                        <!-- Top Row: Preview Swatch + Scale Bump -->
+                                        <div class="picker-top-row">
+                                            <div class="picker-swatch-large" id="pickerSwatchLarge"></div>
+                                            <div class="scale-bump-panel">
+                                                <div class="scale-bump-title">Scale Bump</div>
+                                                <div class="scale-bump-buttons">
+                                                    <button class="scale-bump-btn" id="anchorBumpLeft" data-action="bump-anchor" data-value="-1">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="5"></circle>
+                                                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                                                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                                                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                                                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                                                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                                        </svg>
+                                                        Lighter
+                                                    </button>
+                                                    <span class="scale-bump-indicator" id="anchorIndicator">--</span>
+                                                    <button class="scale-bump-btn" id="anchorBumpRight" data-action="bump-anchor" data-value="1">
+                                                        Darker
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Spacer to push sliders down -->
+                                        <div class="picker-spacer"></div>
+                                        
+                                        <!-- HSV Sliders -->
+                                        <div class="hsv-sliders">
+                                            <div class="hsv-slider-row">
+                                                <label>H</label>
+                                                <input type="range" class="hue-slider-picker" id="pickerHue" min="0" max="360" value="210">
+                                                <input type="number" id="pickerHueNum" min="0" max="360" value="210">
+                                            </div>
+                                            <div class="hsv-slider-row">
+                                                <label>S</label>
+                                                <input type="range" class="sat-slider-picker" id="pickerSat" min="0" max="100" value="85">
+                                                <input type="number" id="pickerSatNum" min="0" max="100" value="85">
+                                            </div>
+                                            <div class="hsv-slider-row">
+                                                <label>V</label>
+                                                <input type="range" class="val-slider-picker" id="pickerVal" min="0" max="100" value="94">
+                                                <input type="number" id="pickerValNum" min="0" max="100" value="94">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Apply Button (aligned with hex row) -->
+                                        <button class="picker-apply-btn" id="pickerApplyBtn">Apply as Brand Color</button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Neutral Color Picker (sidebar) -->
+                            <div class="neutral-picker-wrapper">
+                                <label class="neutral-sidebar-label">Neutral Temperature</label>
+                                <div class="neutral-picker-sidebar">
+                                    <!-- Grid at top (full width) -->
+                                    <div class="neutral-color-grid" id="neutralColorGrid"></div>
+                                    <!-- Middle row: Swatch + Scale Bump -->
+                                    <div class="neutral-middle-row">
+                                        <div class="neutral-preview-swatch" id="neutralPreviewSwatch"></div>
+                                        <div class="scale-bump-panel neutral-scale-bump">
+                                        <div class="scale-bump-title">Scale Bump</div>
+                                        <div class="scale-bump-buttons">
+                                            <button class="scale-bump-btn" id="neutralBumpLighter" data-action="bump-neutral" data-value="-1">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <circle cx="12" cy="12" r="5"></circle>
+                                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                                </svg>
+                                                Lighter
+                                            </button>
+                                            <span class="scale-bump-indicator" id="neutralBumpIndicator">--</span>
+                                            <button class="scale-bump-btn" id="neutralBumpDarker" data-action="bump-neutral" data-value="1">
+                                                Darker
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <!-- Apply button -->
+                                    <button class="picker-apply-btn neutral-apply-btn" data-action="apply-neutral">Apply as Neutral Color</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Neutral Colors -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title" data-action="toggle-editor" data-target="primary" style="cursor: pointer;">Neutral Colors (<span id="neutralLabel">Cool</span> Gray) <span class="click-to-edit">Click to Edit</span></h2>
+            </div>
+            <div class="color-grid" id="neutralGrid" data-action="toggle-editor" data-target="primary" style="cursor: pointer;"></div>
+        </div>
+        
+        <!-- Semantic Colors, Window Controls, Backgrounds & Typography (side by side) -->
+        <div class="section-row">
+            <!-- Inner container: Semantic + Window wrap together -->
+            <div class="section-row-inner">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Semantic Colors</h2>
+                    </div>
+                    <div class="color-grid" id="semanticGrid"></div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Window Controls</h2>
+                    </div>
+                    <div class="color-grid" id="windowGrid"></div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Backgrounds & Typography</h2>
+                </div>
+                <div class="typography-controls">
+                    <div class="gradient-control-group">
+                        <label>Page Background</label>
+                        <div class="swatch-picker" id="picker-pageBg">
+                            <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-pageBg" data-action="toggle-swatch-picker" data-target="picker-pageBg">
+                                <div class="trigger-swatch"></div>
+                                <span class="trigger-label">neutral-50</span>
+                                <span class="trigger-arrow">▼</span>
+                            </div>
+                            <div class="swatch-picker-dropdown" id="picker-pageBg-dropdown"></div>
+                        </div>
+                    </div>
+                    <div class="gradient-control-group">
+                        <label>UI Font</label>
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div class="styled-menu" id="menu-uiFont">
+                                <div class="styled-menu-trigger" data-action="toggle-menu" data-target="menu-uiFont" data-action="toggle-menu" data-target="menu-uiFont" title="Select UI font family">
+                                    <span class="menu-label" id="fontMenuLabel">Arial</span>
+                                    <span class="menu-arrow">▼</span>
+                                </div>
+                                <div class="styled-menu-dropdown" id="menu-uiFont-dropdown">
+                                    <div class="styled-menu-option selected font-option" data-action="select-font" data-value="Arial" style="font-family: Arial, sans-serif;">Arial</div>
+                                    <div class="styled-menu-option font-option" data-action="select-font" data-value="Verdana" style="font-family: Verdana, sans-serif;">Verdana</div>
+                                    <div class="styled-menu-option font-option" data-action="select-font" data-value="Trebuchet MS" style="font-family: 'Trebuchet MS', sans-serif;">Trebuchet MS</div>
+                                </div>
+                            </div>
+                            <button class="angle-preset" id="boldToggle" data-action="toggle-bold" title="Toggle bold text" style="padding: 6px 12px; font-weight: bold; font-size: 12px; box-sizing: border-box;">B</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Buttons</h2>
+            </div>
+            
+            <!-- All Controls in One Row -->
+            <div class="btn-controls-row">
+                <!-- Button Previews Group -->
+                <div class="gradient-control-group">
+                    <div class="btn-preview-grid">
+                        <div class="btn-preview-item">
+                            <button class="btn-solid btn-preview" id="gradientPreview">Primary</button>
+                            <span class="btn-preview-label">Solid</span>
+                        </div>
+                        <div class="btn-preview-item">
+                            <button class="btn-outline btn-preview" id="outlinePreview">Outline</button>
+                            <span class="btn-preview-label">Outline</span>
+                        </div>
+                        <div class="btn-preview-item">
+                            <button class="btn-ghost btn-preview" id="ghostPreview">Ghost</button>
+                            <span class="btn-preview-label">Ghost</span>
+                        </div>
+                        <div class="btn-preview-item">
+                            <button class="btn-danger btn-preview" id="dangerPreview">Danger</button>
+                            <span class="btn-preview-label">Destructive</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gradient Toggle Group -->
+                <div class="gradient-control-group">
+                    <label>Apply Gradient?</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="gradientToggle" data-action="toggle-gradient">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Shade Controls Group -->
+                <div class="gradient-control-group">
+                    <label>Default Shade + Text Color Flip Point</label>
+                    <div style="display: inline-block;">
+                        <div class="angle-presets" id="textFlipButtons">
+                            <!-- Buttons generated by JS -->
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                            <button class="angle-preset" style="flex: 1;" data-action="move-text-flip" data-value="-1" id="textFlipLeft">◀</button>
+                            <button class="angle-preset" style="flex: 1;" data-action="move-text-flip" data-value="1" id="textFlipRight">▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        </div>
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             END: Core Theme Content (Tab 1)
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             FRAPPE ONLY: HTML START - Tab 2 (Frappe Settings)
+             Remove entire section for basic version
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <!-- Tab 2: Frappe Settings -->
+        <div id="tab-frappe" class="tab-content">
+            
+            <!-- Subtab Navigation -->
+            <div class="subtab-nav">
+                <button class="subtab-btn active" data-action="switch-subtab" data-target="common">Common Elements</button>
+                <button class="subtab-btn" data-action="switch-subtab" data-target="lists">Lists</button>
+                <button class="subtab-btn" data-action="switch-subtab" data-target="forms">Forms</button>
+                <button class="subtab-btn" data-action="switch-subtab" data-target="indicators">Indicators</button>
+                <button class="subtab-btn" data-action="switch-subtab" data-target="navigation">Navigation</button>
+                <button class="subtab-btn" data-action="switch-subtab" data-target="print">Print</button>
+            </div>
+            
+            <!-- Subtab: Common Elements -->
+            <div id="subtab-common" class="subtab-content active">
+                
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Common Elements</h2>
+                    </div>
+                    <p style="font-size: 12px; color: var(--muted-text); margin-bottom: 16px;">
+                        These settings apply across multiple Frappe application points.
+                    </p>
+                    
+                    <div class="frappe-settings-grid">
+                        
+                        <!-- Frappe Core Variables Section Header -->
+                        <div class="setting-section-header">Frappe CSS Variables</div>
+                        
+                        <!-- --primary (inherited) -->
+                        <div class="setting-row inherited">
+                            <div class="setting-label">
+                                <span class="setting-name">--primary</span>
+                                <span class="setting-desc">Main brand color for buttons, links, active states</span>
+                                <span class="setting-inherited">↑ Inherits from Core Theme → Primary Hue (600 shade)</span>
+                            </div>
+                            <div class="setting-control">
+                                <span class="inherited-value inherited-swatch" id="inherited-primary"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- --bg-color (inherited) -->
+                        <div class="setting-row inherited">
+                            <div class="setting-label">
+                                <span class="setting-name">--bg-color</span>
+                                <span class="setting-desc">Page background color</span>
+                                <span class="setting-inherited">↑ Inherits from Core Theme → Page Background</span>
+                            </div>
+                            <div class="setting-control">
+                                <span class="inherited-value inherited-swatch" id="inherited-bg-color"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- --fg-color (inherited) -->
+                        <div class="setting-row inherited">
+                            <div class="setting-label">
+                                <span class="setting-name">--fg-color</span>
+                                <span class="setting-desc">Card/panel/form background</span>
+                                <span class="setting-inherited">↑ Inherits from Core Theme → Panel Background</span>
+                            </div>
+                            <div class="setting-control">
+                                <span class="inherited-value inherited-swatch" id="inherited-fg-color"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- --btn-default-bg (editable) -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">--btn-default-bg</span>
+                                <span class="setting-desc">Secondary/default button background</span>
+                                <span class="setting-suggestion">💡 Suggest: primary-100 for contrast with primary buttons</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-btnDefaultBg">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-btnDefaultBg">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">primary-100</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-btnDefaultBg-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- --control-bg (editable) -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">--control-bg</span>
+                                <span class="setting-desc">Input field background color</span>
+                                <span class="setting-suggestion">💡 Suggest: neutral-50 for subtle contrast</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-controlBg">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-controlBg">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">neutral-50</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-controlBg-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- UI Settings Section Header -->
+                        <div class="setting-section-header" style="margin-top: 20px;">UI Settings</div>
+                        
+                        <!-- Navbar Theme -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Navbar Theme</span>
+                                <span class="setting-desc">Top navigation bar color scheme</span>
+                                <span class="setting-suggestion">💡 Dark is standard Frappe look</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-navbarTheme">
+                                    <div class="swatch-picker-trigger" data-action="toggle-navbar-picker">
+                                        <div class="trigger-swatch" id="navbar-trigger-swatch"></div>
+                                        <span class="trigger-label" id="navbar-trigger-label">Dark</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-navbarTheme-dropdown">
+                                        <div class="swatch-picker-option selected" data-value="dark" data-action="select-navbar-theme">
+                                            <div class="option-swatch" style="background: #1a1a1a;"></div>
+                                            <div><div class="option-label">Dark</div><div class="option-desc">neutral-900</div></div>
+                                        </div>
+                                        <div class="swatch-picker-option" data-value="light" data-action="select-navbar-theme">
+                                            <div class="option-swatch" style="background: #ffffff; border: 1px solid #ddd;"></div>
+                                            <div><div class="option-label">Light</div><div class="option-desc">white</div></div>
+                                        </div>
+                                        <div class="swatch-picker-option" data-value="primary" data-action="select-navbar-theme">
+                                            <div class="option-swatch" id="navbar-primary-swatch"></div>
+                                            <div><div class="option-label">Primary</div><div class="option-desc">primary-700</div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alternate Rows -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Alternate Row Colors</span>
+                                <span class="setting-desc">Zebra striping in tables and lists for easier scanning</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="styled-menu" id="menu-alternateRows">
+                                    <div class="styled-menu-trigger" data-action="toggle-menu" data-target="menu-alternateRows">
+                                        <span class="menu-label">Yes</span>
+                                        <span class="menu-arrow">▼</span>
+                                    </div>
+                                    <div class="styled-menu-dropdown" id="menu-alternateRows-dropdown">
+                                        <div class="styled-menu-option selected" data-value="true" data-action="select-menu-option">Yes</div>
+                                        <div class="styled-menu-option" data-value="false" data-action="select-menu-option">No</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alternate Row Color -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Alternate Row Color</span>
+                                <span class="setting-desc">Background color for every other row (zebra stripes)</span>
+                                <span class="setting-suggestion">💡 Suggest: neutral-50 for subtle striping</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-alternateRowColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-alternateRowColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">neutral-50</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-alternateRowColor-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Row Hover Color -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Row Hover Color</span>
+                                <span class="setting-desc">Background when mouse hovers over a row</span>
+                                <span class="setting-suggestion">💡 Suggest: light (50-100) for subtle, non-distracting feedback</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-rowHoverColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-rowHoverColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">primary-50</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-rowHoverColor-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Row Selection Color -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Row Selection Color</span>
+                                <span class="setting-desc">Background for selected/checked rows</span>
+                                <span class="setting-suggestion">💡 Suggest: primary (100-200) to clearly show selection</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-rowSelectionColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-rowSelectionColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">primary-100</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-rowSelectionColor-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Border Radius -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Card Border Radius</span>
+                                <span class="setting-desc">Corner rounding for cards, modals, panels</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="styled-menu" id="menu-cardBorderRadius">
+                                    <div class="styled-menu-trigger" data-action="toggle-menu" data-target="menu-cardBorderRadius">
+                                        <span class="menu-label">8px (default)</span>
+                                        <span class="menu-arrow">▼</span>
+                                    </div>
+                                    <div class="styled-menu-dropdown" id="menu-cardBorderRadius-dropdown">
+                                        <div class="styled-menu-option" data-value="0" data-action="select-menu-option">0 (sharp)</div>
+                                        <div class="styled-menu-option" data-value="4px" data-action="select-menu-option">4px (minimal)</div>
+                                        <div class="styled-menu-option selected" data-value="8px" data-action="select-menu-option">8px (default)</div>
+                                        <div class="styled-menu-option" data-value="12px" data-action="select-menu-option">12px (rounded)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Focus Ring Color -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Focus Ring Color</span>
+                                <span class="setting-desc">Glow around focused input fields (shows which field is active)</span>
+                                <span class="setting-suggestion">💡 Suggest: primary (100-300) for accessibility visibility</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-focusRingColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-focusRingColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">primary-100</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-focusRingColor-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Default Border Color -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">Default Border Color</span>
+                                <span class="setting-desc">Standard border for inputs, cards, dividers</span>
+                                <span class="setting-suggestion">💡 Suggest: neutral (200-400) for clean, unobtrusive lines</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="swatch-picker" id="picker-defaultBorderColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-defaultBorderColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">neutral-300</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-defaultBorderColor-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Section Header -->
+                        <div class="setting-section-header" style="margin-top: 20px;">Sizing & Dimensions</div>
+                        
+                        <!-- Border Radius (global) -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">--border-radius</span>
+                                <span class="setting-desc">Global corner radius for buttons, inputs, badges</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="styled-menu" id="menu-borderRadius">
+                                    <div class="styled-menu-trigger" data-action="toggle-menu" data-target="menu-borderRadius">
+                                        <span class="menu-label">6px (default)</span>
+                                        <span class="menu-arrow">▼</span>
+                                    </div>
+                                    <div class="styled-menu-dropdown" id="menu-borderRadius-dropdown">
+                                        <div class="styled-menu-option" data-value="0" data-action="select-menu-option">0 (sharp)</div>
+                                        <div class="styled-menu-option" data-value="4px" data-action="select-menu-option">4px (subtle)</div>
+                                        <div class="styled-menu-option selected" data-value="6px" data-action="select-menu-option">6px (default)</div>
+                                        <div class="styled-menu-option" data-value="8px" data-action="select-menu-option">8px (rounded)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Border Radius Large (dialogs/modals) -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">--border-radius-lg</span>
+                                <span class="setting-desc">Corner radius for dialogs, modals, cards</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="styled-menu" id="menu-borderRadiusLg">
+                                    <div class="styled-menu-trigger" data-action="toggle-menu" data-target="menu-borderRadiusLg">
+                                        <span class="menu-label">12px (default)</span>
+                                        <span class="menu-arrow">▼</span>
+                                    </div>
+                                    <div class="styled-menu-dropdown" id="menu-borderRadiusLg-dropdown">
+                                        <div class="styled-menu-option" data-value="0" data-action="select-menu-option">0 (sharp)</div>
+                                        <div class="styled-menu-option" data-value="8px" data-action="select-menu-option">8px (subtle)</div>
+                                        <div class="styled-menu-option selected" data-value="12px" data-action="select-menu-option">12px (default)</div>
+                                        <div class="styled-menu-option" data-value="16px" data-action="select-menu-option">16px (rounded)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Button Height -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="setting-name">--btn-height</span>
+                                <span class="setting-desc">Standard button height (affects touch targets)</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="styled-menu" id="menu-btnHeight">
+                                    <div class="styled-menu-trigger" data-action="toggle-menu" data-target="menu-btnHeight">
+                                        <span class="menu-label">28px (default)</span>
+                                        <span class="menu-arrow">▼</span>
+                                    </div>
+                                    <div class="styled-menu-dropdown" id="menu-btnHeight-dropdown">
+                                        <div class="styled-menu-option" data-value="24px" data-action="select-menu-option">24px (compact)</div>
+                                        <div class="styled-menu-option selected" data-value="28px" data-action="select-menu-option">28px (default)</div>
+                                        <div class="styled-menu-option" data-value="32px" data-action="select-menu-option">32px (comfortable)</div>
+                                        <div class="styled-menu-option" data-value="36px" data-action="select-menu-option">36px (large)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- Subtab: Lists -->
+            <div id="subtab-lists" class="subtab-content">
+                <div class="frappe-settings-grid">
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header">List Header</div>
+                    
+                    <!-- Header Background -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Header Background</span>
+                            <span class="setting-desc">Background color for column headers (.list-row-head)</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-100 for subtle contrast</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-listHeaderBg">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-listHeaderBg">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-100</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-listHeaderBg-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Header Text Color -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Header Text Color</span>
+                            <span class="setting-desc">Text color for column headers</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-700 for readability</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-listHeaderText">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-listHeaderText">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-700</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-listHeaderText-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Rows</div>
+                    
+                    <!-- Alternate Row Color (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Alternate Row Color</span>
+                            <span class="setting-desc">Background for every other row (zebra striping)</span>
+                            <span class="setting-inherited">↑ Set in Common Elements</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-list-alternate"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Row Border Color -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Row Border Color</span>
+                            <span class="setting-desc">Divider line between rows</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-200 for subtle separation</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-listRowBorder">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-listRowBorder">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-200</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-listRowBorder-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Inherited from Common Elements</div>
+                    
+                    <!-- Row Hover (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Row Hover Color</span>
+                            <span class="setting-desc">Background when mouse hovers over a row</span>
+                            <span class="setting-inherited">↑ Set in Common Elements</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-list-hover"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Row Selection (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Row Selection Color</span>
+                            <span class="setting-desc">Background for selected/checked rows</span>
+                            <span class="setting-inherited">↑ Set in Common Elements</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-list-selection"></span>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Subtab: Forms -->
+            <div id="subtab-forms" class="subtab-content">
+                <div class="frappe-settings-grid">
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header">Field Labels</div>
+                    
+                    <!-- Field Label Color -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Label Text Color</span>
+                            <span class="setting-desc">Color for field labels (.control-label)</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-700 for readability</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-formLabelColor">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-formLabelColor">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-700</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-formLabelColor-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Required Indicator (inherited from semantic) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Required Indicator</span>
+                            <span class="setting-desc">Color for required field asterisk (*)</span>
+                            <span class="setting-inherited">↑ Uses Error color from Core Theme</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-form-required"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Section Breaks</div>
+                    
+                    <!-- Section Header Background -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Section Background</span>
+                            <span class="setting-desc">Background for section headers (.section-head)</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-300 for visible separation</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-formSectionBg">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-formSectionBg">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-300</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-formSectionBg-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header Text -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Section Text Color</span>
+                            <span class="setting-desc">Text color for section headers</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-800 for emphasis</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-formSectionText">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-formSectionText">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-800</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-formSectionText-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Tabs</div>
+                    
+                    <!-- Active Tab Color -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Active Tab Color</span>
+                            <span class="setting-desc">Underline/highlight for active form tab</span>
+                            <span class="setting-suggestion">💡 Suggest: primary-600 to match brand</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-formTabActive">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-formTabActive">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-600</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-formTabActive-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Controls</div>
+                    
+                    <!-- Checkbox Color -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">--checkbox-color</span>
+                            <span class="setting-desc">Check mark color for checkboxes and check icons</span>
+                            <span class="setting-suggestion">💡 Suggest: primary-500 for brand consistency</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-checkboxColor">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-checkboxColor">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-500</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-checkboxColor-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Inherited from Common Elements</div>
+                    
+                    <!-- Input Background (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Input Background</span>
+                            <span class="setting-desc">Background for text inputs, selects</span>
+                            <span class="setting-inherited">↑ Set in Common Elements (--control-bg)</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-form-input-bg"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Focus Ring (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Focus Ring Color</span>
+                            <span class="setting-desc">Glow around focused inputs</span>
+                            <span class="setting-inherited">↑ Set in Common Elements</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-form-focus"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Border Color (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Input Border Color</span>
+                            <span class="setting-desc">Border for text inputs, selects</span>
+                            <span class="setting-inherited">↑ Set in Common Elements (Default Border)</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-form-border"></span>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Subtab: Indicators -->
+            <div id="subtab-indicators" class="subtab-content">
+                <div class="frappe-settings-grid">
+                    
+                    <!-- Info Box -->
+                    <div class="setting-section-header">About Indicators</div>
+                    <div class="setting-row" style="grid-column: 1 / -1;">
+                        <div class="setting-label" style="max-width: none;">
+                            <span class="setting-desc">Frappe indicators use colored dots/badges to show document status. Most colors are controlled by Semantic Colors in Core Theme.</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 12px;">Inherited from Core Theme → Semantic Colors</div>
+                    
+                    <!-- Green/Success (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Green (Submitted, Active)</span>
+                            <span class="setting-desc">.indicator.green - Submitted, Paid, Active</span>
+                            <span class="setting-inherited">↑ Uses Success color</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-indicator-green"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Red/Error (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Red (Cancelled, Failed)</span>
+                            <span class="setting-desc">.indicator.red - Cancelled, Failed, Overdue</span>
+                            <span class="setting-inherited">↑ Uses Error color</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-indicator-red"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Orange/Warning (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Orange (Pending, Draft)</span>
+                            <span class="setting-desc">.indicator.orange - Pending, On Hold, Draft</span>
+                            <span class="setting-inherited">↑ Uses Warning color</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-indicator-orange"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Custom Indicator Colors</div>
+                    
+                    <!-- Blue/Info -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Blue (Info, In Progress)</span>
+                            <span class="setting-desc">.indicator.blue - Draft, In Progress, Info</span>
+                            <span class="setting-suggestion">💡 Suggest: primary-500 to match brand</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-indicatorBlue">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-indicatorBlue">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-500</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-indicatorBlue-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Purple -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Purple (Custom)</span>
+                            <span class="setting-desc">.indicator.purple - Custom status</span>
+                            <span class="setting-suggestion">💡 Pick any color (Frappe default: #743ee2)</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="color" id="color-indicatorPurple" class="color-input" 
+                               >
+                        </div>
+                    </div>
+                    
+                    <!-- Gray -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Gray (Disabled, Closed)</span>
+                            <span class="setting-desc">.indicator.darkgrey - Disabled, Closed</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-400</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-indicatorGray">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-indicatorGray">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-400</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-indicatorGray-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Subtab: Navigation -->
+            <div id="subtab-navigation" class="subtab-content">
+                <div class="frappe-settings-grid">
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header">Navbar (inherited)</div>
+                    
+                    <!-- Navbar Theme (inherited) -->
+                    <div class="setting-row inherited">
+                        <div class="setting-label">
+                            <span class="setting-name">Navbar Theme</span>
+                            <span class="setting-desc">Top navigation bar color scheme</span>
+                            <span class="setting-inherited">↑ Set in Common Elements</span>
+                        </div>
+                        <div class="setting-control">
+                            <span class="inherited-value inherited-swatch" id="inherited-nav-navbar"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Sidebar</div>
+                    
+                    <!-- Sidebar Background -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Sidebar Background</span>
+                            <span class="setting-desc">Background for desk sidebar (.desk-sidebar)</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-50 or white</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-sidebarBg">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-sidebarBg">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-50</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-sidebarBg-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar Item Text -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Item Text Color</span>
+                            <span class="setting-desc">Text color for sidebar items</span>
+                            <span class="setting-suggestion">💡 Suggest: neutral-700</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-sidebarText">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-sidebarText">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-700</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-sidebarText-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar Item Hover -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Item Hover Background</span>
+                            <span class="setting-desc">Background when hovering sidebar item</span>
+                            <span class="setting-suggestion">💡 Suggest: primary-50</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-sidebarHover">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-sidebarHover">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-50</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-sidebarHover-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar Item Active -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Active Item Background</span>
+                            <span class="setting-desc">Background for selected sidebar item</span>
+                            <span class="setting-suggestion">💡 Suggest: primary-100</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-sidebarActive">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-sidebarActive">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-100</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-sidebarActive-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar Active Text -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Active Item Text</span>
+                            <span class="setting-desc">Text color for selected sidebar item</span>
+                            <span class="setting-suggestion">💡 Suggest: primary-700</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-sidebarActiveText">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-sidebarActiveText">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-700</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-sidebarActiveText-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Header -->
+                    <div class="setting-section-header" style="margin-top: 20px;">Awesomebar (Search)</div>
+                    
+                    <!-- Awesomebar Result Hover -->
+                    <div class="setting-row">
+                        <div class="setting-label">
+                            <span class="setting-name">Result Hover Background</span>
+                            <span class="setting-desc">Background when hovering search result</span>
+                            <span class="setting-suggestion">💡 Suggest: primary-50</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="swatch-picker" id="picker-awesomebarHover">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-awesomebarHover">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-50</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-awesomebarHover-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Subtab: Print -->
+            <div id="subtab-print" class="subtab-content">
+                
+                <!-- Info Box -->
+                <p style="font-size: 12px; color: var(--muted-text); margin-bottom: 16px;">
+                    <strong>Two palettes:</strong> Full Color for PDF exports, Pure B&W for paper printing.
+                    B&W uses true grays with no color cast. Add <code>.print-bw-mode</code> class before printing to activate B&W palette.
+                </p>
+                
+                <!-- Dual Column Layout -->
+                <div class="print-dual-grid">
+                    
+                    <!-- LEFT COLUMN: Full Color (for PDF) -->
+                    <div class="print-column">
+                        <div class="print-column-header">
+                            <span class="color-badge color"></span>
+                            Full Color (PDF)
+                        </div>
+                        
+                        <!-- Heading -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Heading</span>
+                            <div class="swatch-picker" id="picker-printHeading">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-printHeading">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">primary-700</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-printHeading-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Body Text -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Body Text</span>
+                            <div class="swatch-picker" id="picker-printText">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-printText">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-900</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-printText-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Table Header -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Table Header</span>
+                            <div class="swatch-picker" id="picker-printTableHeader">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-printTableHeader">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-100</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-printTableHeader-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Table Border -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Table Border</span>
+                            <div class="swatch-picker" id="picker-printTableBorder">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-printTableBorder">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-300</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-printTableBorder-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Footer Text</span>
+                            <div class="swatch-picker" id="picker-printFooter">
+                                <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-printFooter">
+                                    <div class="trigger-swatch"></div>
+                                    <span class="trigger-label">neutral-500</span>
+                                    <span class="trigger-arrow">▼</span>
+                                </div>
+                                <div class="swatch-picker-dropdown" id="picker-printFooter-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RIGHT COLUMN: B&W (for paper printing) -->
+                    <div class="print-column">
+                        <div class="print-column-header">
+                            <span class="color-badge bw"></span>
+                            B&W (Paper) 🖨️
+                        </div>
+                        
+                        <!-- Heading B&W -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Heading</span>
+                            <div class="gray-picker" id="gray-printHeadingBW">
+                                <div class="gray-picker-trigger" data-action="toggle-gray-picker" data-target="gray-printHeadingBW">
+                                    <div class="gray-swatch" style="background: #333333;"></div>
+                                    <span class="gray-label">Gray 800</span>
+                                    <span class="gray-arrow">▼</span>
+                                </div>
+                                <div class="gray-picker-dropdown" id="gray-printHeadingBW-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Body Text B&W -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Body Text</span>
+                            <div class="gray-picker" id="gray-printTextBW">
+                                <div class="gray-picker-trigger" data-action="toggle-gray-picker" data-target="gray-printTextBW">
+                                    <div class="gray-swatch" style="background: #1a1a1a;"></div>
+                                    <span class="gray-label">Gray 900</span>
+                                    <span class="gray-arrow">▼</span>
+                                </div>
+                                <div class="gray-picker-dropdown" id="gray-printTextBW-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Table Header B&W -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Table Header</span>
+                            <div class="gray-picker" id="gray-printTableHeaderBW">
+                                <div class="gray-picker-trigger" data-action="toggle-gray-picker" data-target="gray-printTableHeaderBW">
+                                    <div class="gray-swatch" style="background: #f5f5f5;"></div>
+                                    <span class="gray-label">Gray 100</span>
+                                    <span class="gray-arrow">▼</span>
+                                </div>
+                                <div class="gray-picker-dropdown" id="gray-printTableHeaderBW-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Table Border B&W -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Table Border</span>
+                            <div class="gray-picker" id="gray-printTableBorderBW">
+                                <div class="gray-picker-trigger" data-action="toggle-gray-picker" data-target="gray-printTableBorderBW">
+                                    <div class="gray-swatch" style="background: #cccccc;"></div>
+                                    <span class="gray-label">Gray 300</span>
+                                    <span class="gray-arrow">▼</span>
+                                </div>
+                                <div class="gray-picker-dropdown" id="gray-printTableBorderBW-dropdown"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer B&W -->
+                        <div class="print-setting-row">
+                            <span class="print-setting-label">Footer Text</span>
+                            <div class="gray-picker" id="gray-printFooterBW">
+                                <div class="gray-picker-trigger" data-action="toggle-gray-picker" data-target="gray-printFooterBW">
+                                    <div class="gray-swatch" style="background: #888888;"></div>
+                                    <span class="gray-label">Gray 500</span>
+                                    <span class="gray-arrow">▼</span>
+                                </div>
+                                <div class="gray-picker-dropdown" id="gray-printFooterBW-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Inherited section -->
+                <div style="margin-top: 20px;">
+                    <div class="setting-section-header">Inherited from Common Elements</div>
+                    <div class="frappe-settings-grid">
+                        <div class="setting-row inherited">
+                            <div class="setting-label">
+                                <span class="setting-name">Alternate Row Color</span>
+                                <span class="setting-desc">Zebra striping in print tables</span>
+                                <span class="setting-inherited">↑ Set in Common Elements</span>
+                            </div>
+                            <div class="setting-control">
+                                <span class="inherited-value inherited-swatch" id="inherited-print-alternate"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    
+                </div>
+            </div>
+            
+        </div><!-- End Tab 2: Frappe Settings -->
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             FRAPPE ONLY: HTML END - Tab 2 (Frappe Settings)
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        
+    </div>
+    </div>
+    
+    <div class="notification" id="notification">Copied</div>
+    
+    <!-- Modal Dialog -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div id="modalContent"></div>
+        </div>
+    </div>
+    
