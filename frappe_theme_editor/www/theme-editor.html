@@ -5422,6 +5422,20 @@
     let currentTheme = null; // Track currently loaded theme
     let originalState = null; // Track original state for revert
     
+    // Helper to access frappe from iframe context
+    function getFrappe() {
+        // Try parent window first (if in iframe)
+        if (window.parent && window.parent !== window && window.parent.frappe) {
+            return window.parent.frappe;
+        }
+        // Try current window (if loaded directly)
+        if (window.frappe) {
+            return window.frappe;
+        }
+        // Not available
+        return null;
+    }
+    
     // Helper to generate color swatch from hue
     function generateSwatchColor(hue) {
         return hslToHex(hue, 80, 60);
@@ -5429,6 +5443,12 @@
     
     // Show "My Themes" modal with table of saved themes
     async function showMyThemesModal() {
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available. Please reload the page.');
+            return;
+        }
+        
         try {
             const response = await frappe.call({
                 method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_all_themes',
@@ -5542,6 +5562,12 @@
                 return;
             }
             
+            const frappe = getFrappe();
+            if (!frappe) {
+                showErrorModal('Frappe API not available. Please reload the page.');
+                return;
+            }
+            
             try {
                 const jsonData = exportThemeJSON();
                 
@@ -5571,6 +5597,12 @@
     async function updateCurrentTheme() {
         if (!currentTheme) {
             showErrorModal('No theme is currently loaded');
+            return;
+        }
+        
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available. Please reload the page.');
             return;
         }
         
@@ -5613,6 +5645,12 @@
     
     // Load theme from DocType
     async function loadThemeFromDocType(themeName) {
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available. Please reload the page.');
+            return;
+        }
+        
         try {
             await frappe.call({
                 method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_theme',
@@ -5641,6 +5679,12 @@
     
     // Download theme as JSON file
     async function downloadThemeFromDocType(themeName) {
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available. Please reload the page.');
+            return;
+        }
+        
         try {
             await frappe.call({
                 method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_theme',
@@ -5684,6 +5728,12 @@
     
     // Delete theme
     async function deleteTheme(themeName) {
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available. Please reload the page.');
+            return;
+        }
+        
         try {
             await frappe.call({
                 method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.delete_theme',
@@ -5708,6 +5758,12 @@
     
     // Show theme JSON in modal
     async function showThemeJSON(themeName) {
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available. Please reload the page.');
+            return;
+        }
+        
         try {
             await frappe.call({
                 method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_theme',
