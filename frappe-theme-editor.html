@@ -2445,7 +2445,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.1</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.2</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
@@ -5433,6 +5433,17 @@
             return window.frappe;
         }
         // Not available
+        console.error('Frappe not available. Parent:', !!window.parent, 'Parent.frappe:', !!(window.parent && window.parent.frappe));
+        return null;
+    }
+    
+    // Wait for frappe to be available
+    async function waitForFrappe(maxAttempts = 20) {
+        for (let i = 0; i < maxAttempts; i++) {
+            const frappe = getFrappe();
+            if (frappe) return frappe;
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
         return null;
     }
     
@@ -5443,9 +5454,9 @@
     
     // Show "My Themes" modal with table of saved themes
     async function showMyThemesModal() {
-        const frappe = getFrappe();
+        const frappe = await waitForFrappe();
         if (!frappe) {
-            showErrorModal('Frappe API not available. Please reload the page.');
+            showErrorModal('Frappe API not available. Please reload the page or check console for details.');
             return;
         }
         
