@@ -7232,18 +7232,9 @@
             // Show polite browser message for Safari/Firefox users
             document.getElementById('modalContent').innerHTML = `
                 <div class="modal-title">Eyedropper Not Available</div>
-                <div class="modal-message">
-                    The eyedropper tool requires Chrome or Edge browser.
-                    <br><br>
-                    You can still select colors using:
-                    <ul style="text-align: left; margin-top: 12px; line-height: 1.8;">
-                        <li>HSL sliders</li>
-                        <li>Color grid</li>
-                        <li>Hex input (paste color codes)</li>
-                    </ul>
-                </div>
+                <div class="modal-message">Please open this app in Chrome or Edge to use this feature.</div>
                 <div class="modal-buttons">
-                    <button class="btn btn-primary" data-action="close-modal">Got it</button>
+                    <button class="btn btn-primary" data-action="close-modal">OK</button>
                 </div>
             `;
             document.getElementById('modalOverlay').classList.add('show');
