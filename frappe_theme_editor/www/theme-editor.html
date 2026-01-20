@@ -1543,6 +1543,81 @@
             text-align: center;
             padding: 20px 0;
         }
+        
+        /* Wide modal for themes list */
+        .modal-wide {
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        /* Themes table */
+        .themes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        
+        .themes-table th {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .themes-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            font-size: 14px;
+        }
+        
+        .themes-table tr:hover {
+            background: rgba(0,0,0,0.02);
+        }
+        
+        .theme-swatch {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        
+        .swatch-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .theme-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            min-width: auto;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .modal-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted-text);
+        }
 
         /* ─────────────────────────────────────────────────────────────── 
            Component: Background & Gradient Settings
@@ -2374,10 +2449,10 @@
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
-                <button class="btn btn-primary" data-action="copy-css">Copy CSS</button>
-                <button class="btn btn-secondary" data-action="show-modal" data-target="save">Save Theme</button>
-                <button class="btn btn-secondary" data-action="show-modal" data-target="load">Load Theme</button>
-                <button class="btn btn-secondary" data-action="show-modal" data-target="reset">Reset</button>
+                <button class="btn btn-secondary" data-action="my-themes">My Themes</button>
+                <button class="btn btn-secondary" data-action="revert" id="btnRevert" style="display: none;">Revert</button>
+                <button class="btn btn-secondary" data-action="update-theme" id="btnUpdate" style="display: none;">Update</button>
+                <button class="btn btn-primary" data-action="save-as-new">Save as New Theme</button>
             </div>
         </div>
         
@@ -3935,6 +4010,32 @@
                 confirmReset();
                 break;
                 
+            // Theme management actions
+            case 'my-themes':
+                showMyThemesModal();
+                break;
+            case 'save-as-new':
+                showSaveAsNewModal();
+                break;
+            case 'update-theme':
+                updateCurrentTheme();
+                break;
+            case 'revert':
+                revertTheme();
+                break;
+            case 'load-theme':
+                loadThemeFromDocType(target.dataset.name);
+                break;
+            case 'download-theme':
+                downloadThemeFromDocType(target.dataset.name);
+                break;
+            case 'delete-theme':
+                confirmDeleteTheme(target.dataset.name);
+                break;
+            case 'show-json':
+                showThemeJSON(target.dataset.name);
+                break;
+                
             // Copy CSS
             case 'copy-css':
                 copyCSS();
@@ -5315,6 +5416,378 @@
     });
     
     // ═══════════════════════════════════════════════════════════════════════════
+    // THEME MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    let currentTheme = null; // Track currently loaded theme
+    let originalState = null; // Track original state for revert
+    
+    // Helper to generate color swatch from hue
+    function generateSwatchColor(hue) {
+        return hslToHex(hue, 80, 60);
+    }
+    
+    // Show "My Themes" modal with table of saved themes
+    async function showMyThemesModal() {
+        try {
+            const response = await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_all_themes',
+                callback: function(r) {
+                    if (r.message) {
+                        renderThemesTable(r.message);
+                    }
+                }
+            });
+        } catch (error) {
+            showErrorModal('Failed to load themes: ' + error.message);
+        }
+    }
+    
+    function renderThemesTable(themes) {
+        let tableHTML = '';
+        
+        if (themes.length === 0) {
+            tableHTML = '<div class="modal-empty">No saved themes yet. Create your first theme!</div>';
+        } else {
+            tableHTML = `
+                <table class="themes-table">
+                    <thead>
+                        <tr>
+                            <th>Colors</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th colspan="3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            themes.forEach(theme => {
+                const primaryColor = generateSwatchColor(theme.primary_color || 200);
+                const neutralColor = generateSwatchColor(theme.neutral_color || 0);
+                const isDefault = theme.name === 'Default';
+                
+                tableHTML += `
+                    <tr>
+                        <td>
+                            <div class="theme-swatch">
+                                <div class="swatch-color" style="background-color: ${primaryColor}"></div>
+                                <div class="swatch-color" style="background-color: ${neutralColor}"></div>
+                            </div>
+                        </td>
+                        <td><strong>${theme.theme_name}</strong></td>
+                        <td>${theme.description || ''}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" data-action="load-theme" data-name="${theme.name}">
+                                Load ${theme.theme_name}
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" data-action="download-theme" data-name="${theme.name}">
+                                Download
+                            </button>
+                        </td>
+                        <td>
+                            ${!isDefault ? `<button class="btn btn-sm btn-danger" data-action="delete-theme" data-name="${theme.name}">X</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">My Themes</div>
+            ${tableHTML}
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" data-action="close-modal">Close</button>
+            </div>
+        `;
+        
+        // Make modal wider for table
+        const modal = document.querySelector('.modal');
+        modal.classList.add('modal-wide');
+        
+        document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    // Show "Save as New Theme" dialog
+    function showSaveAsNewModal() {
+        const defaultName = `Theme ${new Date().toLocaleDateString()}`;
+        
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">Save as New Theme</div>
+            <div class="modal-message">Enter a name and optional description:</div>
+            <input type="text" class="modal-input" id="newThemeName" value="${defaultName}" placeholder="Theme name">
+            <textarea class="modal-input" id="newThemeDescription" placeholder="Description (optional)" rows="3"></textarea>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                <button class="btn btn-primary" data-action="confirm-save-new">Save</button>
+            </div>
+        `;
+        
+        document.getElementById('modalOverlay').classList.add('show');
+        
+        // Handle save
+        document.querySelector('[data-action="confirm-save-new"]').addEventListener('click', async () => {
+            const name = document.getElementById('newThemeName').value.trim();
+            const description = document.getElementById('newThemeDescription').value.trim();
+            
+            if (!name) {
+                showErrorModal('Please enter a theme name');
+                return;
+            }
+            
+            try {
+                const jsonData = exportThemeJSON();
+                
+                await frappe.call({
+                    method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.save_theme',
+                    args: {
+                        theme_name: name,
+                        description: description,
+                        json_data: jsonData
+                    },
+                    callback: function(r) {
+                        if (r.message) {
+                            showSuccessModal('Theme saved successfully!');
+                            currentTheme = { name: r.message, theme_name: name };
+                            originalState = JSON.parse(jsonData);
+                            updateThemeButtons();
+                        }
+                    }
+                });
+            } catch (error) {
+                showErrorModal('Failed to save theme: ' + error.message);
+            }
+        });
+    }
+    
+    // Update current theme
+    async function updateCurrentTheme() {
+        if (!currentTheme) {
+            showErrorModal('No theme is currently loaded');
+            return;
+        }
+        
+        try {
+            const jsonData = exportThemeJSON();
+            
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.update_theme',
+                args: {
+                    name: currentTheme.name,
+                    description: currentTheme.description || '',
+                    json_data: jsonData
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        showSuccessModal('Theme updated successfully!');
+                        originalState = JSON.parse(jsonData);
+                        updateThemeButtons();
+                    }
+                }
+            });
+        } catch (error) {
+            showErrorModal('Failed to update theme: ' + error.message);
+        }
+    }
+    
+    // Revert to original loaded state
+    function revertTheme() {
+        if (!originalState) {
+            showErrorModal('No theme to revert to');
+            return;
+        }
+        
+        // Restore state from original
+        state = JSON.parse(JSON.stringify(originalState));
+        updateUI();
+        updateThemeButtons();
+        showNotification('Reverted to original theme');
+    }
+    
+    // Load theme from DocType
+    async function loadThemeFromDocType(themeName) {
+        try {
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_theme',
+                args: { name: themeName },
+                callback: function(r) {
+                    if (r.message) {
+                        const themeData = JSON.parse(r.message.json_data);
+                        state = themeData;
+                        currentTheme = {
+                            name: r.message.name,
+                            theme_name: r.message.theme_name,
+                            description: r.message.description
+                        };
+                        originalState = JSON.parse(JSON.stringify(themeData));
+                        updateUI();
+                        updateThemeButtons();
+                        closeModal();
+                        showNotification(`Loaded theme: ${currentTheme.theme_name}`);
+                    }
+                }
+            });
+        } catch (error) {
+            showErrorModal('Failed to load theme: ' + error.message);
+        }
+    }
+    
+    // Download theme as JSON file
+    async function downloadThemeFromDocType(themeName) {
+        try {
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_theme',
+                args: { name: themeName },
+                callback: function(r) {
+                    if (r.message) {
+                        const jsonData = r.message.json_data;
+                        const blob = new Blob([jsonData], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${r.message.theme_name.replace(/\s+/g, '-').toLowerCase()}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        showNotification('Theme downloaded');
+                    }
+                }
+            });
+        } catch (error) {
+            showErrorModal('Failed to download theme: ' + error.message);
+        }
+    }
+    
+    // Confirm delete theme
+    function confirmDeleteTheme(themeName) {
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">Delete Theme</div>
+            <div class="modal-message">Are you sure you want to delete this theme? This action cannot be undone.</div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                <button class="btn btn-danger" data-action="confirm-delete-theme" data-name="${themeName}">Delete</button>
+            </div>
+        `;
+        
+        document.getElementById('modalOverlay').classList.add('show');
+        
+        document.querySelector('[data-action="confirm-delete-theme"]').addEventListener('click', () => {
+            deleteTheme(themeName);
+        });
+    }
+    
+    // Delete theme
+    async function deleteTheme(themeName) {
+        try {
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.delete_theme',
+                args: { name: themeName },
+                callback: function(r) {
+                    if (r.message && r.message.success) {
+                        showSuccessModal('Theme deleted successfully!');
+                        if (currentTheme && currentTheme.name === themeName) {
+                            currentTheme = null;
+                            originalState = null;
+                            updateThemeButtons();
+                        }
+                        // Refresh themes list
+                        setTimeout(() => showMyThemesModal(), 1000);
+                    }
+                }
+            });
+        } catch (error) {
+            showErrorModal('Failed to delete theme: ' + error.message);
+        }
+    }
+    
+    // Show theme JSON in modal
+    async function showThemeJSON(themeName) {
+        try {
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_theme',
+                args: { name: themeName },
+                callback: function(r) {
+                    if (r.message) {
+                        const jsonData = JSON.stringify(JSON.parse(r.message.json_data), null, 2);
+                        
+                        document.getElementById('modalContent').innerHTML = `
+                            <div class="modal-title">Theme JSON: ${r.message.theme_name}</div>
+                            <pre style="max-height: 400px; overflow-y: auto; background: #f5f5f5; padding: 16px; border-radius: 6px; font-size: 12px;">${jsonData}</pre>
+                            <div class="modal-buttons">
+                                <button class="btn btn-secondary" data-action="close-modal">Close</button>
+                                <button class="btn btn-primary" data-action="copy-json">Copy to Clipboard</button>
+                            </div>
+                        `;
+                        
+                        document.querySelector('[data-action="copy-json"]').addEventListener('click', () => {
+                            navigator.clipboard.writeText(jsonData);
+                            showNotification('JSON copied to clipboard');
+                        });
+                        
+                        document.getElementById('modalOverlay').classList.add('show');
+                    }
+                }
+            });
+        } catch (error) {
+            showErrorModal('Failed to load theme JSON: ' + error.message);
+        }
+    }
+    
+    // Update button visibility based on theme state
+    function updateThemeButtons() {
+        const btnUpdate = document.getElementById('btnUpdate');
+        const btnRevert = document.getElementById('btnRevert');
+        
+        // Show Update/Revert only if:
+        // 1. A theme is loaded
+        // 2. It's not the default theme
+        // 3. Changes have been made
+        const hasChanges = originalState && JSON.stringify(state) !== JSON.stringify(originalState);
+        const isCustomTheme = currentTheme && currentTheme.name !== 'Default';
+        
+        if (isCustomTheme && hasChanges) {
+            btnUpdate.style.display = 'inline-block';
+            btnRevert.style.display = 'inline-block';
+        } else {
+            btnUpdate.style.display = 'none';
+            btnRevert.style.display = 'none';
+        }
+    }
+    
+    // Export current state as JSON string
+    function exportThemeJSON() {
+        return JSON.stringify(state, null, 2);
+    }
+    
+    // Show success modal
+    function showSuccessModal(message) {
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">Success</div>
+            <div class="modal-message">${message}</div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" data-action="close-modal">OK</button>
+            </div>
+        `;
+        document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    // Show notification
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.classList.add('show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 2000);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
     // CONFIGURATION
     // ═══════════════════════════════════════════════════════════════════════════
     
@@ -5874,6 +6347,11 @@
         // Update Frappe swatches (they depend on hue values)
         if (typeof initFrappeSwatches === 'function') {
             initFrappeSwatches();
+        }
+        
+        // Update theme management buttons visibility
+        if (typeof updateThemeButtons === 'function') {
+            updateThemeButtons();
         }
     }
     
