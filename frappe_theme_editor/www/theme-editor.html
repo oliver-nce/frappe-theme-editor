@@ -2445,7 +2445,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor</h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.1</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
@@ -7227,21 +7227,36 @@
 
     // Global eyedropper handler
     async function handleEyedropper() {
-        // Check if EyeDropper API is available
-        if (!('EyeDropper' in window)) {
-            // Show polite browser message for Safari/Firefox users
-            document.getElementById('modalContent').innerHTML = `
-                <div class="modal-title">Eyedropper Not Available</div>
-                <div class="modal-message">Please open this app in Chrome or Edge to use this feature.</div>
-                <div class="modal-buttons">
-                    <button class="btn btn-primary" data-action="close-modal">OK</button>
-                </div>
-            `;
-            document.getElementById('modalOverlay').classList.add('show');
+        // Safari on macOS: Trigger native color picker
+        if (ENV.isSafari && ENV.isMac && !('EyeDropper' in window)) {
+            const nativePicker = document.getElementById('brandColorPicker');
+            const hint = document.getElementById('eyedropperHint');
+            
+            if (nativePicker) {
+                // Show inline hint immediately
+                if (hint) hint.classList.add('show');
+                
+                // Open picker immediately
+                nativePicker.focus();
+                nativePicker.click();
+                
+                // Start fade out after 3 seconds
+                if (hint) {
+                    setTimeout(() => {
+                        hint.classList.add('fade');
+                        setTimeout(() => hint.classList.remove('show', 'fade'), 600);
+                    }, 3000);
+                }
+            }
             return;
         }
         
         // Chrome/Edge: Use EyeDropper API
+        if (!('EyeDropper' in window)) {
+            showNotification('EyeDropper not available in this browser');
+            return;
+        }
+        
         try {
             const eyeDropper = new EyeDropper();
             const result = await eyeDropper.open();
@@ -7276,10 +7291,24 @@
         updatePickerSliderBackgrounds();
         updatePickerUI(false);
         
-        // Always show eyedropper button (all browsers)
-        // The handler will show a message for Safari/Firefox
-        if (eyedropperBtn) {
-            eyedropperBtn.classList.remove('eyedropper-hidden');
+        // Show eyedropper for Chrome/Edge/Safari
+        if (ENV.hasEyeDropper || (ENV.isSafari && ENV.isMac)) {
+            if (eyedropperBtn) {
+                eyedropperBtn.classList.remove('eyedropper-hidden');
+                if (ENV.isSafari && ENV.isMac) {
+                    eyedropperBtn.title = 'Open color picker (with eyedropper)';
+                }
+            }
+            
+            // Safari: native picker updates custom picker
+            if (ENV.isSafari && ENV.isMac && !ENV.hasEyeDropper) {
+                nativePicker.addEventListener('input', function() {
+                    const newHex = this.value.toUpperCase();
+                    pickerHSV = hexToHSV(newHex);
+                    updatePickerUI(false);
+                    updatePickerSliderBackgrounds();
+                });
+            }
         }
     }
 
