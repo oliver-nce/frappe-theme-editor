@@ -7276,11 +7276,10 @@
         updatePickerSliderBackgrounds();
         updatePickerUI(false);
         
-        // Show eyedropper only for Chrome/Edge (browsers with EyeDropper API)
-        if (ENV.hasEyeDropper) {
-            if (eyedropperBtn) {
-                eyedropperBtn.classList.remove('eyedropper-hidden');
-            }
+        // Always show eyedropper button (all browsers)
+        // The handler will show a message for Safari/Firefox
+        if (eyedropperBtn) {
+            eyedropperBtn.classList.remove('eyedropper-hidden');
         }
     }
 
