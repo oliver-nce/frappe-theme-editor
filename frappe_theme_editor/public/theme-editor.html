@@ -2462,7 +2462,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.1.3</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.1.4</span></h1>
                 <p>Theme editor for Frappe applications</p>
             </div>
             <div class="header-buttons">
@@ -7540,36 +7540,19 @@
 
     // Global eyedropper handler
     async function handleEyedropper() {
-        // Safari on macOS: Trigger native color picker
-        if (ENV.isSafari && ENV.isMac && !('EyeDropper' in window)) {
-            const nativePicker = document.getElementById('brandColorPicker');
-            const hint = document.getElementById('eyedropperHint');
-            
-            if (nativePicker) {
-                // Show inline hint immediately
-                if (hint) hint.classList.add('show');
-                
-                // Open picker immediately
-                nativePicker.focus();
-                nativePicker.click();
-                
-                // Start fade out after 3 seconds
-                if (hint) {
-                    setTimeout(() => {
-                        hint.classList.add('fade');
-                        setTimeout(() => hint.classList.remove('show', 'fade'), 600);
-                    }, 3000);
-                }
-            }
+        // Check if EyeDropper API is available (Chrome/Edge only)
+        if (!('EyeDropper' in window)) {
+            // Show polite message for Safari/Firefox users
+            showModal(
+                'Eyedropper Not Available',
+                '<p style="margin: 0; line-height: 1.6;">The eyedropper feature requires the EyeDropper API, which is only available in Chrome and Edge browsers.</p>' +
+                '<p style="margin: 16px 0 0 0; line-height: 1.6;">Please open this app in <strong>Chrome</strong> or <strong>Edge</strong> to use this feature.</p>',
+                [{ label: 'OK', primary: true }]
+            );
             return;
         }
         
         // Chrome/Edge: Use EyeDropper API
-        if (!('EyeDropper' in window)) {
-            showNotification('EyeDropper not available in this browser');
-            return;
-        }
-        
         try {
             const eyeDropper = new EyeDropper();
             const result = await eyeDropper.open();
@@ -7604,23 +7587,11 @@
         updatePickerSliderBackgrounds();
         updatePickerUI(false);
         
-        // Show eyedropper for Chrome/Edge/Safari
-        if (ENV.hasEyeDropper || (ENV.isSafari && ENV.isMac)) {
-            if (eyedropperBtn) {
-                eyedropperBtn.classList.remove('eyedropper-hidden');
-                if (ENV.isSafari && ENV.isMac) {
-                    eyedropperBtn.title = 'Open color picker (with eyedropper)';
-                }
-            }
-            
-            // Safari: native picker updates custom picker
-            if (ENV.isSafari && ENV.isMac && !ENV.hasEyeDropper) {
-                nativePicker.addEventListener('input', function() {
-                    const newHex = this.value.toUpperCase();
-                    pickerHSV = hexToHSV(newHex);
-                    updatePickerUI(false);
-                    updatePickerSliderBackgrounds();
-                });
+        // Always show eyedropper button (shows message in unsupported browsers)
+        if (eyedropperBtn) {
+            eyedropperBtn.classList.remove('eyedropper-hidden');
+            if (!ENV.hasEyeDropper) {
+                eyedropperBtn.title = 'Eyedropper (Chrome/Edge only)';
             }
         }
     }
