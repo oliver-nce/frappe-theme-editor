@@ -2445,7 +2445,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.6</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.7</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
@@ -5682,13 +5682,15 @@
                 callback: function(r) {
                     if (r.message) {
                         const themeData = JSON.parse(r.message.json_data);
-                        state = themeData;
+                        // Load from _state if available (new format), otherwise use root (old format)
+                        const stateData = themeData._state || themeData;
+                        state = { ...DEFAULT_STATE, ...stateData };
                         currentTheme = {
                             name: r.message.name,
                             theme_name: r.message.theme_name,
                             description: r.message.description
                         };
-                        originalState = JSON.parse(JSON.stringify(themeData));
+                        originalState = JSON.parse(JSON.stringify(state));
                         updateUI();
                         updateThemeButtons();
                         closeModal();
@@ -5840,9 +5842,176 @@
         }
     }
     
-    // Export current state as JSON string
+    // Export current state as JSON string (full W3C Design Token format)
     function exportThemeJSON() {
-        return JSON.stringify(state, null, 2);
+        const themeName = currentTheme ? currentTheme.theme_name : 'NCE Theme';
+        
+        // W3C Design Tokens Format (2025.10)
+        // https://www.w3.org/community/design-tokens/
+        const theme = {
+            "$name": themeName,
+            "$description": "NCE Design System theme for business web applications and Frappe applications. Hue-based color system with AI agent guidance.",
+            "$version": "1.0.0",
+            "$created": new Date().toISOString(),
+            
+            // Store the raw state for easy loading
+            "_state": state,
+            
+            // ═══════════════════════════════════════════════════════════════
+            // $extensions - Custom metadata including AI agent guidance
+            // ═══════════════════════════════════════════════════════════════
+            "$extensions": {
+                "nce-design-system": {
+                    "version": "2.0",
+                    "generator": "NCE Theme Editor",
+                    "colorModel": "HSL-based with hue anchoring",
+                    
+                    "agentGuidance": {
+                        "purpose": "This theme defines a complete color system for business web applications. Use these tokens consistently across all UI elements.",
+                        
+                        "colorUsage": {
+                            "primary": "Brand color for CTAs, links, interactive elements. Use shade 500 as default, lighter shades for hover states, darker for active states.",
+                            "neutral": "Backgrounds, borders, structural elements. Use lighter shades (50-200) for backgrounds, darker (700-900) for text.",
+                            "semantic": "Status colors ONLY for their designated purpose. Never use success for decoration, error for emphasis, or warning for information."
+                        },
+                        
+                        "accessibilityRules": {
+                            "textContrast": "Minimum 4.5:1 for body text, 3:1 for large text (18px+ or 14px bold)",
+                            "interactiveContrast": "Minimum 3:1 for interactive element boundaries",
+                            "colorAlone": "Never use color as the only indicator of state or meaning"
+                        },
+                        
+                        "implementationNotes": {
+                            "cssVariables": "All tokens available as CSS custom properties (--primary-500, --neutral-100, etc.)",
+                            "hslValues": "Raw HSL values provided in $extensions.nce-hsl for programmatic manipulation",
+                            "shadeScale": "50 (lightest) to 900 (darkest) following Tailwind convention"
+                        }
+                    }
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // PRIMARY COLOR - Brand hue with full shade scale
+            // ═══════════════════════════════════════════════════════════════
+            "primary": {
+                "$description": "Primary brand color. Use for CTAs, links, interactive elements, and brand emphasis.",
+                "hue": {
+                    "$type": "number",
+                    "$value": state.primaryHue,
+                    "$description": "Primary hue value (0-360 degrees on color wheel)"
+                },
+                "defaultShade": {
+                    "$type": "number",
+                    "$value": state.defaultShade,
+                    "$description": "Default shade for primary color (50-900)"
+                },
+                "textFlipShade": {
+                    "$type": "number",
+                    "$value": state.textFlipShade,
+                    "$description": "Shade threshold where button text flips from dark to light"
+                },
+                "shades": {
+                    "$description": "Full primary shade scale - all available for designer use",
+                    ...Object.fromEntries(
+                        CONFIG.primaryShades.map(({shade, s, l}) => [
+                            shade.toString(),
+                            {
+                                "$type": "color",
+                                "$value": getTokenColor(`primary-${shade}`)
+                            }
+                        ])
+                    )
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // NEUTRAL COLOR - Grays with full shade scale
+            // ═══════════════════════════════════════════════════════════════
+            "neutral": {
+                "$description": "Neutral colors for backgrounds, borders, and structural elements.",
+                "hue": {
+                    "$type": "number",
+                    "$value": state.neutralHue,
+                    "$description": "Neutral hue value (-1 for pure gray, 0-360 for tinted)"
+                },
+                "shades": {
+                    "$description": "Full neutral shade scale - all available for designer use",
+                    ...Object.fromEntries(
+                        CONFIG.neutralShades.map(({shade, s, l}) => {
+                            const saturation = state.neutralHue === -1 ? 0 : s;
+                            const hue = state.neutralHue === -1 ? 0 : state.neutralHue;
+                            return [
+                                shade.toString(),
+                                {
+                                    "$type": "color",
+                                    "$value": getTokenColor(`neutral-${shade}`)
+                                }
+                            ];
+                        })
+                    )
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // SEMANTIC COLORS - Status and feedback
+            // ═══════════════════════════════════════════════════════════════
+            "semantic": {
+                "$description": "Status colors for user feedback.",
+                "success": {
+                    "$type": "color",
+                    "$value": hslToHex(state.success.h, state.success.s, state.success.l),
+                    "$description": "Positive outcomes, completed actions, valid states"
+                },
+                "error": {
+                    "$type": "color",
+                    "$value": hslToHex(state.error.h, state.error.s, state.error.l),
+                    "$description": "Failures, invalid states, destructive actions"
+                },
+                "warning": {
+                    "$type": "color",
+                    "$value": hslToHex(state.warning.h, state.warning.s, state.warning.l),
+                    "$description": "Caution states, potential issues"
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // WINDOW CONTROLS - macOS-style traffic light buttons
+            // ═══════════════════════════════════════════════════════════════
+            "windowControls": {
+                "$description": "Window control button colors (macOS traffic light style)",
+                "close": {
+                    "$type": "color",
+                    "$value": hslToHex(state.close.h, state.close.s, state.close.l)
+                },
+                "minimize": {
+                    "$type": "color",
+                    "$value": hslToHex(state.minimize.h, state.minimize.s, state.minimize.l)
+                },
+                "maximize": {
+                    "$type": "color",
+                    "$value": hslToHex(state.maximize.h, state.maximize.s, state.maximize.l)
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // BUTTON SETTINGS
+            // ═══════════════════════════════════════════════════════════════
+            "button": {
+                "$description": "Button styling configuration",
+                "gradient": {
+                    "angle": {
+                        "$type": "number",
+                        "$value": state.gradient.angle
+                    }
+                },
+                "defaultShade": {
+                    "$type": "number",
+                    "$value": state.defaultShade
+                }
+            }
+        };
+        
+        return JSON.stringify(theme, null, 2);
     }
     
     // Show success modal

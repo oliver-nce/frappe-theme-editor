@@ -31,9 +31,11 @@ def get_all_themes():
 		try:
 			json_data = json.loads(theme_doc.json_data)
 			
-			# State stores hue values, we need to generate the 600 shade color
-			primary_hue = json_data.get("primaryHue", 210)
-			neutral_hue = json_data.get("neutralHue", 210)
+			# State can be in _state (new format) or at root level (old format)
+			state_data = json_data.get("_state", json_data)
+			
+			primary_hue = state_data.get("primaryHue", 210)
+			neutral_hue = state_data.get("neutralHue", 210)
 			
 			# Generate primary-600: hue, 78% sat, 50% lightness (from CONFIG.primaryShades)
 			theme["primary_color"] = hsl_to_hex(primary_hue, 78, 50)
