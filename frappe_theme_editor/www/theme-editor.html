@@ -33,6 +33,7 @@
             --font-size-md: 14px;
             --font-size-lg: 16px;
             --ui-font-weight: 600;  /* Controlled by Bold toggle */
+            --ui-font-family: Arial, sans-serif;  /* Controlled by Font picker */
             
             /* Breakpoints (as reference) */
             /* --bp-mobile: 600px */
@@ -45,7 +46,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; } 
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--ui-font-family, Arial, sans-serif);
             margin: 0;
             padding: 0;
             background: white; /* Neutral for Safari toolbar */
@@ -392,6 +393,7 @@
             padding: 6px 12px;
             border: none;
             border-radius: 4px;
+            font-family: inherit;
             font-size: 12px;
             font-weight: var(--ui-font-weight, 600);
             cursor: pointer;
@@ -628,6 +630,7 @@
             padding: 16px 24px;
             border-radius: 8px;
             border: none;
+            font-family: inherit;
             font-size: 14px;
             font-weight: var(--ui-font-weight, 600);
             cursor: pointer;
@@ -2459,7 +2462,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.9</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.1.0</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
@@ -6780,11 +6783,8 @@
         // Close dropdown
         document.getElementById('menu-uiFont-dropdown').classList.remove('open');
         
-        // Apply font to body and button previews
-        document.body.style.fontFamily = `${fontFamily}, sans-serif`;
-        document.querySelectorAll('.btn-preview').forEach(btn => {
-            btn.style.fontFamily = `${fontFamily}, sans-serif`;
-        });
+        // Apply font via CSS variable
+        document.documentElement.style.setProperty('--ui-font-family', `${fontFamily}, sans-serif`);
         
         updateUI();
     }
@@ -6804,11 +6804,7 @@
     
     function updateFont(fontFamily) {
         state.uiFont = fontFamily;
-        document.body.style.fontFamily = `${fontFamily}, sans-serif`;
-        // Apply to button previews
-        document.querySelectorAll('.btn-preview').forEach(btn => {
-            btn.style.fontFamily = `${fontFamily}, sans-serif`;
-        });
+        document.documentElement.style.setProperty('--ui-font-family', `${fontFamily}, sans-serif`);
         updateUI();
     }
     
@@ -6873,11 +6869,11 @@
             updateFontMenuBold();
         }
         
-        // Apply typography via CSS variable (single source of truth)
-        const fontFamily = `${state.uiFont || 'Arial'}, sans-serif`;
+        // Apply typography via CSS variables (single source of truth)
+        const fontFamily = state.uiFont || 'Arial';
         const fontWeight = state.uiFontBold ? '600' : 'normal';
+        document.documentElement.style.setProperty('--ui-font-family', `${fontFamily}, sans-serif`);
         document.documentElement.style.setProperty('--ui-font-weight', fontWeight);
-        document.body.style.fontFamily = fontFamily;
         
         // Update preview button - use default shade
         const preview = document.getElementById('gradientPreview');
