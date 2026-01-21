@@ -425,8 +425,8 @@
         /* Outline button variant (extends .btn) */
         .btn.btn-outline {
             background: transparent;
-            border: 1px solid var(--primary-500);
-            color: var(--primary-600);
+            border: 1px solid var(--outline-border-color, var(--primary-500));
+            color: var(--outline-text-color, var(--primary-600));
             box-shadow: none;
         }
         
@@ -610,8 +610,8 @@
         
         .btn-outline {
             background: transparent;
-            border: 1px solid var(--primary-500);
-            color: var(--primary-600);
+            border: 1px solid var(--outline-border-color, var(--primary-500));
+            color: var(--outline-text-color, var(--primary-600));
         }
         
         .btn-ghost {
@@ -649,7 +649,7 @@
         }
         
         .btn-outline.btn-preview {
-            border: 1px solid var(--primary-500);
+            border: 1px solid var(--outline-border-color, var(--primary-500));
         }
         
         .btn-ghost.btn-preview {
@@ -2462,7 +2462,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.1.0</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.1.1</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
@@ -5009,7 +5009,12 @@
                 "defaultShade": {
                     "$type": "number",
                     "$value": state.defaultShade,
-                    "$description": "Default shade for primary color (50-900)"
+                    "$description": "Default shade for solid primary buttons (50-900)"
+                },
+                "outlineShade": {
+                    "$type": "number",
+                    "$value": state.outlineShade,
+                    "$description": "Shade for outline button border (shift-click to set)"
                 },
                 "textFlipShade": {
                     "$type": "number",
@@ -5171,7 +5176,12 @@
                 "defaultShade": {
                     "$type": "number",
                     "$value": state.defaultShade,
-                    "$description": "Default shade for primary buttons (50-900)"
+                    "$description": "Default shade for solid primary buttons (50-900)"
+                },
+                "outlineShade": {
+                    "$type": "number",
+                    "$value": state.outlineShade,
+                    "$description": "Shade for outline button border (shift-click to set)"
                 },
                 "textFlipShade": {
                     "$type": "number",
@@ -5920,7 +5930,12 @@
                 "defaultShade": {
                     "$type": "number",
                     "$value": state.defaultShade,
-                    "$description": "Default shade for primary color (50-900)"
+                    "$description": "Default shade for solid primary buttons (50-900)"
+                },
+                "outlineShade": {
+                    "$type": "number",
+                    "$value": state.outlineShade,
+                    "$description": "Shade for outline button border (shift-click to set)"
                 },
                 "textFlipShade": {
                     "$type": "number",
@@ -6024,6 +6039,10 @@
                 "defaultShade": {
                     "$type": "number",
                     "$value": state.defaultShade
+                },
+                "outlineShade": {
+                    "$type": "number",
+                    "$value": state.outlineShade
                 }
             }
         };
@@ -6125,6 +6144,7 @@
             stops: { top: 96, mid: 88, bottom: 82 }
         },
         defaultShade: 400,
+        outlineShade: 500,   // Shade for outline button border (shift-click to set)
         textFlipShade: 500,  // Shades >= this use light text
         uiFont: 'Arial',     // UI font family
         uiFontBold: false    // Bold toggle for UI elements
@@ -6390,8 +6410,14 @@
             btn.className = 'angle-preset text-flip-btn';
             btn.dataset.shade = shade;
             btn.textContent = shade;
-            // Clicking tile sets default shade (button color)
-            btn.onclick = function() { setDefaultShade(shade); };
+            // Click = set default shade (solid button), Shift+click = set outline shade
+            btn.onclick = function(e) {
+                if (e.shiftKey) {
+                    setOutlineShade(shade);
+                } else {
+                    setDefaultShade(shade);
+                }
+            };
             container.appendChild(btn);
         });
         
@@ -6401,6 +6427,7 @@
     function updateTextFlipUI() {
         const flipShade = state.textFlipShade || 500;
         const defaultShade = state.defaultShade || 400;
+        const outlineShade = state.outlineShade || 500;
         
         // Update button colors and text
         TEXT_FLIP_SHADES.forEach(shade => {
@@ -6417,8 +6444,12 @@
             const isAnchor = state.anchorShade === shade && state.anchorHex;
             btn.textContent = `${shade}${isAnchor ? '*' : ''}`;
             
-            // Show which is the default shade with bold border
-            if (shade === defaultShade) {
+            // Show which is the default shade with bold border (solid button)
+            // Show outline shade with ring indicator (2px gap, 1px line)
+            const isDefault = shade === defaultShade;
+            const isOutline = shade === outlineShade;
+            
+            if (isDefault) {
                 btn.style.borderColor = '#0066cc';
                 btn.style.borderWidth = '2px';
                 btn.style.fontWeight = 'bold';
@@ -6426,6 +6457,15 @@
                 btn.style.borderColor = '#ddd';
                 btn.style.borderWidth = '1px';
                 btn.style.fontWeight = 'normal';
+            }
+            
+            // Outline ring: 2px gap from border, 1px line, no fill
+            if (isOutline) {
+                btn.style.outline = '1px solid #0066cc';
+                btn.style.outlineOffset = '2px';
+            } else {
+                btn.style.outline = 'none';
+                btn.style.outlineOffset = '0';
             }
         });
     }
@@ -6589,9 +6629,18 @@
         document.documentElement.style.setProperty('--btn-gradient', btnGradient);
         document.documentElement.style.setProperty('--btn-text', btnText);
         
+        // Outline button colors based on outlineShade
+        const outlineShade = state.outlineShade || 500;
+        const outlineBorderColor = getTokenColor(`primary-${outlineShade}`);
+        // Text color is one shade darker (or same if at 900)
+        const outlineTextShade = Math.min(900, outlineShade + 100);
+        const outlineTextColor = getTokenColor(`primary-${outlineTextShade}`);
+        document.documentElement.style.setProperty('--outline-border-color', outlineBorderColor);
+        document.documentElement.style.setProperty('--outline-text-color', outlineTextColor);
+        
         // All button previews now use CSS variables via base classes:
         // .btn-solid uses --btn-gradient, --btn-text
-        // .btn-outline uses --primary-500, --primary-600
+        // .btn-outline uses --outline-border-color, --outline-text-color
         // .btn-ghost uses --primary-600
         // .btn-danger uses --error, --error-text
         // No inline style manipulation needed!
@@ -6703,11 +6752,19 @@
         });
     }
     
-    // Default shade function
+    // Default shade function (solid button)
     function setDefaultShade(shade) {
         console.log('setDefaultShade called with:', shade);
         state.defaultShade = parseInt(shade);
         updateTextFlipUI(); // Update tile borders
+        updateUI();
+    }
+    
+    // Outline shade function (shift-click)
+    function setOutlineShade(shade) {
+        console.log('setOutlineShade called with:', shade);
+        state.outlineShade = parseInt(shade);
+        updateTextFlipUI(); // Update tile indicators
         updateUI();
     }
 
@@ -7126,6 +7183,7 @@
             if (theme.primary) {
                 if (theme.primary.hue?.$value !== undefined) state.primaryHue = theme.primary.hue.$value;
                 if (theme.primary.defaultShade?.$value !== undefined) state.defaultShade = theme.primary.defaultShade.$value;
+                if (theme.primary.outlineShade?.$value !== undefined) state.outlineShade = theme.primary.outlineShade.$value;
                 if (theme.primary.textFlipShade?.$value !== undefined) state.textFlipShade = theme.primary.textFlipShade.$value;
                 // Note: shades are computed from hue, not stored in state
             }
@@ -7166,6 +7224,9 @@
                 }
                 if (theme.button.defaultShade?.$value !== undefined) {
                     state.defaultShade = theme.button.defaultShade.$value;
+                }
+                if (theme.button.outlineShade?.$value !== undefined) {
+                    state.outlineShade = theme.button.outlineShade.$value;
                 }
                 if (theme.button.textFlipShade?.$value !== undefined) {
                     state.textFlipShade = theme.button.textFlipShade.$value;
