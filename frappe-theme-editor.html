@@ -32,6 +32,7 @@
             --font-size-sm: 12px;
             --font-size-md: 14px;
             --font-size-lg: 16px;
+            --ui-font-weight: 600;  /* Controlled by Bold toggle */
             
             /* Breakpoints (as reference) */
             /* --bp-mobile: 600px */
@@ -135,7 +136,7 @@
             margin-bottom: var(--space-md);
         }
         
-        .section-title { font-size: var(--font-size-lg); font-weight: 600; }
+        .section-title { font-size: var(--font-size-lg); font-weight: var(--ui-font-weight, 600); }
         .click-to-edit {
             font-size: 12px;
             font-weight: 400;
@@ -408,7 +409,7 @@
         }
         
         /* Primary button variant (extends .btn) */
-        .btn-primary {
+        .btn-primary, .btn.btn-solid {
             background: var(--btn-gradient);
             color: var(--btn-text);
         }
@@ -417,6 +418,19 @@
         .btn-secondary { 
             background: var(--btn-secondary-gradient);
             color: var(--btn-secondary-text);
+        }
+        
+        /* Outline button variant (extends .btn) */
+        .btn.btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-500);
+            color: var(--primary-600);
+            box-shadow: none;
+        }
+        
+        .btn.btn-outline:hover {
+            background: var(--primary-50, rgba(0,0,0,0.02));
+            box-shadow: none;
         }
         
         /* Edit button (standalone - not used with .btn class) */
@@ -2445,14 +2459,14 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.7</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.8</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
-                <button class="btn btn-secondary" data-action="my-themes">My Themes</button>
-                <button class="btn btn-secondary" data-action="revert" id="btnRevert" style="display: none;">Revert</button>
-                <button class="btn btn-secondary" data-action="update-theme" id="btnUpdate" style="display: none;">Update</button>
-                <button class="btn btn-primary" data-action="save-as-new">Save as New Theme</button>
+                <button class="btn btn-outline" data-action="my-themes">My Themes</button>
+                <button class="btn btn-outline" data-action="revert" id="btnRevert" style="display: none;">Revert</button>
+                <button class="btn btn-outline" data-action="update-theme" id="btnUpdate" style="display: none;">Update</button>
+                <button class="btn btn-solid" data-action="save-as-new">Save as New Theme</button>
             </div>
         </div>
         
