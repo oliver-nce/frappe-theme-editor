@@ -25,23 +25,54 @@ def get_all_themes():
 		order_by="modified desc"
 	)
 	
-	# Add color swatches
+	# Add color swatches - calculate from hue values stored in state
 	for theme in themes:
 		theme_doc = frappe.get_doc("Theme", theme.name)
 		try:
 			json_data = json.loads(theme_doc.json_data)
-			# Get actual primary-600 and neutral-600 colors from shades
-			primary_shades = json_data.get("primary", {}).get("shades", {})
-			neutral_shades = json_data.get("neutral", {}).get("shades", {})
 			
-			# Use 600 shade as representative color
-			theme["primary_color"] = primary_shades.get("600", {}).get("$value", "#4299F0")
-			theme["neutral_color"] = neutral_shades.get("600", {}).get("$value", "#666666")
+			# State stores hue values, we need to generate the 600 shade color
+			primary_hue = json_data.get("primaryHue", 210)
+			neutral_hue = json_data.get("neutralHue", 210)
+			
+			# Generate primary-600: hue, 78% sat, 50% lightness (from CONFIG.primaryShades)
+			theme["primary_color"] = hsl_to_hex(primary_hue, 78, 50)
+			# Generate neutral-600: hue, 7% sat, 46% lightness (from CONFIG.neutralShades)
+			theme["neutral_color"] = hsl_to_hex(neutral_hue, 7, 46)
 		except:
 			theme["primary_color"] = "#4299F0"
 			theme["neutral_color"] = "#666666"
 	
 	return themes
+
+
+def hsl_to_hex(h, s, l):
+	"""Convert HSL to hex color"""
+	s = s / 100
+	l = l / 100
+	
+	c = (1 - abs(2 * l - 1)) * s
+	x = c * (1 - abs((h / 60) % 2 - 1))
+	m = l - c / 2
+	
+	if h < 60:
+		r, g, b = c, x, 0
+	elif h < 120:
+		r, g, b = x, c, 0
+	elif h < 180:
+		r, g, b = 0, c, x
+	elif h < 240:
+		r, g, b = 0, x, c
+	elif h < 300:
+		r, g, b = x, 0, c
+	else:
+		r, g, b = c, 0, x
+	
+	r = int((r + m) * 255)
+	g = int((g + m) * 255)
+	b = int((b + m) * 255)
+	
+	return f"#{r:02x}{g:02x}{b:02x}".upper()
 
 
 @frappe.whitelist()
