@@ -2445,7 +2445,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.4</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.5</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
@@ -5592,10 +5592,11 @@
                     },
                     callback: function(r) {
                         if (r.message) {
-                            showSuccessModal('Theme saved successfully!');
                             currentTheme = { name: r.message, theme_name: name };
                             originalState = JSON.parse(jsonData);
                             updateThemeButtons();
+                            showNotification('Theme saved successfully!');
+                            closeModal();
                         }
                     }
                 });
@@ -5630,9 +5631,20 @@
                 },
                 callback: function(r) {
                     if (r.message) {
-                        showSuccessModal('Theme updated successfully!');
                         originalState = JSON.parse(jsonData);
                         updateThemeButtons();
+                        showNotification('Theme updated successfully!');
+                        
+                        // If "My Themes" modal is open, refresh it
+                        const modal = document.getElementById('modalOverlay');
+                        if (modal && modal.classList.contains('show')) {
+                            const modalContent = document.getElementById('modalContent');
+                            const modalTitle = modalContent.querySelector('.modal-title');
+                            if (modalTitle && modalTitle.textContent === 'My Themes') {
+                                // Modal is showing themes list, refresh it
+                                showMyThemesModal();
+                            }
+                        }
                     }
                 }
             });
