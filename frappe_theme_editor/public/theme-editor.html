@@ -7543,12 +7543,17 @@
         // Check if EyeDropper API is available (Chrome/Edge only)
         if (!('EyeDropper' in window)) {
             // Show polite message for Safari/Firefox users
-            showModal(
-                'Eyedropper Not Available',
-                '<p style="margin: 0; line-height: 1.6;">The eyedropper feature requires the EyeDropper API, which is only available in Chrome and Edge browsers.</p>' +
-                '<p style="margin: 16px 0 0 0; line-height: 1.6;">Please open this app in <strong>Chrome</strong> or <strong>Edge</strong> to use this feature.</p>',
-                [{ label: 'OK', primary: true }]
-            );
+            document.getElementById('modalContent').innerHTML = `
+                <div class="modal-title">Eyedropper Not Available</div>
+                <div class="modal-message">
+                    <p style="margin: 0; line-height: 1.6;">The eyedropper feature requires the EyeDropper API, which is only available in Chrome and Edge browsers.</p>
+                    <p style="margin: 16px 0 0 0; line-height: 1.6;">Please open this app in <strong>Chrome</strong> or <strong>Edge</strong> to use this feature.</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-solid" data-action="close-modal">OK</button>
+                </div>
+            `;
+            document.getElementById('modalOverlay').classList.add('show');
             return;
         }
         
