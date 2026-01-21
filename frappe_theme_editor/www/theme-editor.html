@@ -393,7 +393,7 @@
             border: none;
             border-radius: 4px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: var(--ui-font-weight, 600);
             cursor: pointer;
             transition: all 0.2s;
             box-shadow: 
@@ -439,7 +439,7 @@
             border: none;
             border-radius: 4px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: var(--ui-font-weight, 600);
             cursor: pointer;
             transition: all 0.2s;
             background: var(--btn-gradient);
@@ -560,7 +560,7 @@
             border: none;
             background: transparent;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: var(--ui-font-weight, 600);
             color: var(--muted-text, #666);
             cursor: pointer;
             border-bottom: none;
@@ -580,7 +580,7 @@
             border: 1px solid var(--container-border, #e0e0e0);
             background: var(--panel-bg, #f5f5f5);
             font-size: 12px;
-            font-weight: 600;
+            font-weight: var(--ui-font-weight, 600);
             color: var(--muted-text, #666);
             cursor: pointer;
             border-radius: 6px;
@@ -629,7 +629,7 @@
             border-radius: 8px;
             border: none;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: var(--ui-font-weight, 600);
             cursor: pointer;
             margin-bottom: 12px;
             transition: all 0.2s;
@@ -2459,7 +2459,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.8</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.0.9</span></h1>
                 <p>Theme editor for Frappe applications • Use Save Theme to export</p>
             </div>
             <div class="header-buttons">
@@ -6817,11 +6817,8 @@
         const boldBtn = document.getElementById('boldToggle');
         const fontWeight = state.uiFontBold ? '600' : 'normal';
         
-        document.body.style.fontWeight = fontWeight;
-        // Apply to button previews
-        document.querySelectorAll('.btn-preview').forEach(btn => {
-            btn.style.fontWeight = fontWeight;
-        });
+        // Set CSS variable - this is the single source of truth
+        document.documentElement.style.setProperty('--ui-font-weight', fontWeight);
         
         if (state.uiFontBold) {
             boldBtn.classList.add('active');
@@ -6876,15 +6873,11 @@
             updateFontMenuBold();
         }
         
-        // Apply typography to body and button previews
+        // Apply typography via CSS variable (single source of truth)
         const fontFamily = `${state.uiFont || 'Arial'}, sans-serif`;
         const fontWeight = state.uiFontBold ? '600' : 'normal';
+        document.documentElement.style.setProperty('--ui-font-weight', fontWeight);
         document.body.style.fontFamily = fontFamily;
-        document.body.style.fontWeight = fontWeight;
-        document.querySelectorAll('.btn-preview').forEach(btn => {
-            btn.style.fontFamily = fontFamily;
-            btn.style.fontWeight = fontWeight;
-        });
         
         // Update preview button - use default shade
         const preview = document.getElementById('gradientPreview');
