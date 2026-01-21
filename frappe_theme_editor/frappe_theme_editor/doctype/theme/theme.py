@@ -30,11 +30,16 @@ def get_all_themes():
 		theme_doc = frappe.get_doc("Theme", theme.name)
 		try:
 			json_data = json.loads(theme_doc.json_data)
-			theme["primary_color"] = json_data.get("primary", {}).get("hue", 200)
-			theme["neutral_color"] = json_data.get("neutral", {}).get("hue", 0)
+			# Get actual primary-600 and neutral-600 colors from shades
+			primary_shades = json_data.get("primary", {}).get("shades", {})
+			neutral_shades = json_data.get("neutral", {}).get("shades", {})
+			
+			# Use 600 shade as representative color
+			theme["primary_color"] = primary_shades.get("600", {}).get("$value", "#4299F0")
+			theme["neutral_color"] = neutral_shades.get("600", {}).get("$value", "#666666")
 		except:
-			theme["primary_color"] = 200
-			theme["neutral_color"] = 0
+			theme["primary_color"] = "#4299F0"
+			theme["neutral_color"] = "#666666"
 	
 	return themes
 
