@@ -5579,7 +5579,7 @@
                             </button>
                         </td>
                         <td>
-                            ${!isDefault ? `<button class="btn btn-sm" style="background: ${deleteBtnBg}; color: ${deleteBtnText}; border: none;" data-action="delete-theme" data-name="${theme.name}">X</button>` : ''}
+                            ${!isDefault ? `<button class="btn btn-sm btn-danger" style="background: ${deleteBtnBg}; color: ${deleteBtnText}; border: none; min-width: 50px; width: 50px;" data-action="delete-theme" data-name="${theme.name}">X</button>` : ''}
                         </td>
                     </tr>
                 `;
