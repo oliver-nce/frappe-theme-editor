@@ -2487,11 +2487,12 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.2.1</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.2.2</span></h1>
                 <p>Theme editor for Frappe applications</p>
             </div>
             <div class="header-buttons">
                 <button class="btn btn-outline" data-action="my-themes">My Themes</button>
+                <button class="btn btn-outline" data-action="frappe-desk">Frappe Desk</button>
                 <button class="btn btn-outline" data-action="revert" id="btnRevert" style="display: none;">Revert</button>
                 <button class="btn btn-outline" data-action="update-theme" id="btnUpdate" style="display: none;">Update</button>
                 <button class="btn btn-solid" data-action="save-as-new">Save as New Theme</button>
@@ -4059,6 +4060,9 @@
             // Theme management actions
             case 'my-themes':
                 showMyThemesModal();
+                break;
+            case 'frappe-desk':
+                window.open('/app/theme', '_blank');
                 break;
             case 'save-as-new':
                 showSaveAsNewModal();
