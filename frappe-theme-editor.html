@@ -2487,7 +2487,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.1.9</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.2.0</span></h1>
                 <p>Theme editor for Frappe applications</p>
             </div>
             <div class="header-buttons">
@@ -2504,6 +2504,7 @@
         <div class="tab-nav">
             <button class="tab-btn active" data-action="switch-tab" data-target="core">Core Theme</button>
             <button class="tab-btn" data-action="switch-tab" data-target="frappe">Frappe Settings</button>
+            <button class="tab-btn" data-action="switch-tab" data-target="system">System</button>
         </div>
         <!-- ═══════════════════════════════════════════════════════════════════════════
              FRAPPE ONLY: HTML END - Tab Navigation
@@ -3862,6 +3863,26 @@
              FRAPPE ONLY: HTML END - Tab 2 (Frappe Settings)
              ═══════════════════════════════════════════════════════════════════════════ -->
         
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             FRAPPE ONLY: HTML START - Tab 3 (System)
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <div id="tab-system" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Theme DocType List</h2>
+                    <p style="color: var(--neutral-500); font-size: 13px; margin: 8px 0 16px 0;">
+                        Traditional Frappe list view of all saved themes
+                    </p>
+                </div>
+                <div id="system-list-container" style="min-height: 400px; border: 1px solid var(--neutral-200); border-radius: 8px; background: white;">
+                    <!-- Frappe list view will be loaded here -->
+                </div>
+            </div>
+        </div>
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             FRAPPE ONLY: HTML END - Tab 3 (System)
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        
     </div>
     </div>
     
@@ -4140,6 +4161,41 @@
         const targetTab = document.getElementById('tab-' + tabId);
         if (targetTab) {
             targetTab.classList.add('active');
+        }
+        
+        // Load Frappe list view when System tab is activated
+        if (tabId === 'system') {
+            loadSystemList();
+        }
+    }
+    
+    // Load Frappe list view in System tab
+    let systemListLoaded = false;
+    async function loadSystemList() {
+        if (systemListLoaded) return; // Only load once
+        
+        const frappe = await waitForFrappe();
+        if (!frappe) {
+            document.getElementById('system-list-container').innerHTML = 
+                '<div style="padding: 40px; text-align: center; color: var(--neutral-500);">Frappe API not available</div>';
+            return;
+        }
+        
+        const container = document.getElementById('system-list-container');
+        container.innerHTML = '<div style="padding: 40px; text-align: center;">Loading...</div>';
+        
+        try {
+            // Create a Frappe List View
+            const list_view = new frappe.views.ListView({
+                doctype: 'Theme',
+                parent: container
+            });
+            
+            systemListLoaded = true;
+        } catch (error) {
+            console.error('Failed to load list view:', error);
+            container.innerHTML = 
+                '<div style="padding: 40px; text-align: center; color: var(--error);">Failed to load list view: ' + error.message + '</div>';
         }
     }
     
