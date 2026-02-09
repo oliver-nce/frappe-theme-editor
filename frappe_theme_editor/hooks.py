@@ -32,6 +32,16 @@ app_license = "MIT"
 # ----------
 # home_page = "theme-editor"
 
+# Desktop Icons / App Tiles
+# -------------------------
+add_to_apps_screen = [
+	{
+		"name": "frappe_theme_editor",
+		"title": "Theme Editor",
+		"route": "/theme-editor",
+	}
+]
+
 # Website route rules
 # website_route_rules = [
 #     {"from_route": "/theme-editor", "to_route": "theme-editor"},
