@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klaviyo Manager - Table View</title>
+    
+    <!-- NCE Design System -->
+    <link rel="stylesheet" href="NCE-Design-System/dist/core-hue-system.css">
+    
+    <style>
+        /* Reset body centering - force full width */
+        body {
+            align-items: stretch !important;
+            justify-content: flex-start !important;
+            padding: 40px 20px !important;
+        }
+        
+        /* Full-width container */
+        .manager-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto;
+        }
+        
+        /* Page header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* Table section */
+        .table-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 2px 8px var(--card-shadow);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: var(--neutral-900);
+            color: var(--neutral-100);
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .table-info {
+            background: var(--neutral-800);
+            color: var(--neutral-300);
+            padding: 12px 20px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--neutral-700);
+        }
+        
+        /* Compact table */
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .task-table thead {
+            background: var(--neutral-800);
+            color: var(--neutral-100);
+        }
+        
+        .task-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--neutral-700);
+        }
+        
+        .task-table th.center {
+            text-align: center;
+        }
+        
+        .task-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--neutral-200);
+            font-size: 13px;
+        }
+        
+        .task-table tbody tr:hover {
+            background: var(--primary-50);
+        }
+        
+        .task-table tbody tr.disabled {
+            opacity: 0.5;
+        }
+        
+        /* Compact columns */
+        .col-order { width: 80px; text-align: center; }
+        .col-id { width: 60px; text-align: center; }
+        .col-name { width: auto; font-weight: 500; }
+        .col-enabled { width: 100px; text-align: center; }
+        .col-pause { width: 100px; text-align: center; }
+        .col-stop { width: 100px; text-align: center; }
+        .col-type { width: 100px; text-align: center; }
+        .col-action { width: 80px; text-align: center; }
+        
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+        
+        .badge.enabled {
+            background: var(--badge-success-bg);
+            color: var(--badge-success-text);
+        }
+        
+        .badge.disabled {
+            background: var(--neutral-200);
+            color: var(--neutral-500);
+        }
+        
+        .type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .type-badge.sql {
+            background: hsl(200, 90%, 90%);
+            color: hsl(200, 80%, 30%);
+        }
+        
+        .type-badge.task {
+            background: hsl(270, 85%, 90%);
+            color: hsl(270, 70%, 35%);
+        }
+        
+        .chain-indicator {
+            display: inline-block;
+            font-size: 11px;
+            color: var(--primary-600);
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        /* Compact run button */
+        .btn-run {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--button-border);
+            background: linear-gradient(180deg, var(--button-bg-start), var(--button-bg-end));
+            color: var(--button-text);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 1px 2px var(--button-shadow);
+        }
+        
+        .btn-run:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px var(--button-hover-shadow);
+        }
+        
+        .btn-run:active {
+            transform: translateY(0);
+        }
+        
+        .btn-run.running {
+            opacity: 0.6;
+            cursor: wait;
+        }
+        
+        /* Status badge in table */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-badge.idle {
+            background: var(--badge-idle-bg);
+            color: var(--badge-idle-text);
+        }
+        
+        .status-badge.running {
+            background: var(--badge-running-bg);
+            color: var(--badge-running-text);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-badge.success {
+            background: var(--badge-success-bg);
+            color: var(--badge-success-text);
+        }
+        
+        .status-badge.error {
+            background: var(--badge-error-bg);
+            color: var(--badge-error-text);
+        }
+        
+        /* Footer actions */
+        .table-footer {
+            padding: 20px;
+            background: var(--neutral-50);
+            border-top: 1px solid var(--neutral-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-chain {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-400);
+            background: linear-gradient(180deg, var(--primary-200), var(--primary-300));
+            color: var(--primary-900);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 6px var(--button-shadow);
+        }
+        
+        .btn-chain:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px var(--button-hover-shadow);
+        }
+        
+        .btn-chain:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-reload {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--neutral-400);
+            background: white;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .btn-reload:hover {
+            background: var(--neutral-100);
+            border-color: var(--neutral-500);
+        }
+        
+        .task-count {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* Modal (reuse from original) */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: hsla(var(--dashboard-neutral-hue), 20%, 10%, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-window {
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: var(--neutral-900);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px hsla(0, 0%, 0%, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--neutral-700);
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--neutral-800);
+            border-bottom: 1px solid var(--neutral-700);
+            flex-shrink: 0;
+        }
+        
+        .modal-status {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .modal-status.success { color: var(--badge-success-text); }
+        .modal-status.error { color: var(--badge-error-text); }
+        .modal-status.loading { color: var(--primary-400); }
+        
+        .modal-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .modal-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--neutral-600);
+            background: var(--neutral-700);
+            color: var(--neutral-200);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        
+        .modal-btn:hover {
+            background: var(--neutral-600);
+            border-color: var(--neutral-500);
+        }
+        
+        .modal-btn.close {
+            background: var(--badge-error-bg);
+            border-color: var(--badge-error-border);
+            color: var(--badge-error-text);
+        }
+        
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 16px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--neutral-200);
+        }
+        
+        /* JSON styling */
+        .json-key { color: hsl(140, 70%, 65%); }
+        .json-string { color: hsl(200, 80%, 75%); }
+        .json-number { color: hsl(210, 90%, 75%); }
+        .json-boolean { color: hsl(0, 70%, 70%); }
+        .json-null { color: var(--neutral-500); font-style: italic; }
+        .json-bracket { color: var(--neutral-400); }
+        .json-toggle {
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            color: var(--neutral-500);
+        }
+        .json-collapsible { margin-left: 20px; }
+        .json-collapsed { display: none; }
+        .json-summary { color: var(--neutral-500); font-style: italic; }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--neutral-400);
+            border-top-color: var(--primary-500);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 6px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="manager-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Klaviyo Manager</h1>
+            <p class="page-subtitle">Task Runner</p>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="table-section">
+            <div class="table-header">Task Configuration</div>
+            <div class="table-info">Configure sync task order and settings. Changes are saved to <code>tasks-config.json</code></div>
+            
+            <table class="task-table" id="taskTable">
+                <thead>
+                    <tr>
+                        <th class="col-order">ORDER</th>
+                        <th class="col-id">ID</th>
+                        <th class="col-name">NAME</th>
+                        <th class="col-enabled center">ENABLED</th>
+                        <th class="col-pause center">PAUSE (S)</th>
+                        <th class="col-stop center">STOP ON FAIL</th>
+                        <th class="col-type center">TYPE</th>
+                        <th class="col-action center"></th>
+                    </tr>
+                </thead>
+                <tbody id="taskTableBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px;">
+                            <span class="loading-spinner"></span>
+                            Loading tasks...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="table-footer">
+                <div>
+                    <button id="runChainBtn" class="btn-chain" disabled>Run Full Sync</button>
+                    <button class="btn-reload" onclick="location.reload()">Reload</button>
+                </div>
+                <div class="task-count" id="taskCount">Loading...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JSON Response Modal -->
+    <div id="jsonModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <span id="modalStatus" class="modal-status loading">Loading...</span>
+                <div class="modal-controls">
+                    <button class="modal-btn" onclick="copyJson()">Copy JSON</button>
+                    <button class="modal-btn" onclick="expandAll()">Expand All</button>
+                    <button class="modal-btn" onclick="collapseAll()">Collapse All</button>
+                    <button class="modal-btn close" onclick="closeModal()">Close</button>
+                </div>
+            </div>
+            <div id="jsonDisplay" class="modal-body"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration
+        const CONFIG = {
+            ajaxUrl: '/wp-admin/admin-ajax.php',
+            configPath: '../jobs-config.json',
+            nonce: window.NCE_TASK_RUNNER_NONCE || 'test_nonce',
+            testMode: false
+        };
+        
+        // Test data fallback
+        const TEST_DATA = {
+            tasks: [
+                { order: 1, id: 1, name: "SQL refresh", include_in_cron_chain: true, filename: "run_sql.php" },
+                { order: 3, id: 3, name: "Profile Upsert", include_in_cron_chain: true, filename: "upsert_profiles_two_step.php" },
+                { order: 4, id: 4, name: "Family Members", include_in_cron_chain: true, filename: "klaviyo_write_objects.php" },
+                { order: 5, id: 5, name: "Email Consent", include_in_cron_chain: false, filename: "grant_email_consent.php" },
+                { order: 6, id: 6, name: "SMS Consent", include_in_cron_chain: false, filename: "grant_sms_consent.php" },
+                { order: 7, id: 7, name: "Enrollment", include_in_cron_chain: true, filename: "klaviyo_write_objects.php" },
+                { order: 8, id: 8, name: "Enrollment Events", include_in_cron_chain: false, filename: "send_enrollment_events.php" },
+                { order: 11, id: 11, name: "Zoho Analytics Sync", include_in_cron_chain: false, filename: "zoho_sync.php" }
+            ]
+        };
+        
+        // State
+        const state = {
+            tasks: [],
+            taskStatuses: {},
+            isChainRunning: false,
+            currentJsonData: null
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadConfig();
+            renderTasks();
+            updateChainButton();
+        });
+        
+        // Load configuration
+        async function loadConfig() {
+            const config = await loadJsonWithFallback(CONFIG.configPath, TEST_DATA);
+            state.tasks = config.tasks || [];
+            state.tasks.forEach(task => {
+                state.taskStatuses[task.id] = 'idle';
+            });
+        }
+        
+        async function loadJsonWithFallback(url, fallbackData) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.warn(`⚠️ Using test data: ${error.message}`);
+                CONFIG.testMode = true;
+                return fallbackData;
+            }
+        }
+        
+        // Render tasks table
+        function renderTasks() {
+            const tbody = document.getElementById('taskTableBody');
+            
+            if (state.tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">No tasks configured</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = state.tasks.map(task => {
+                const status = state.taskStatuses[task.id] || 'idle';
+                const inChain = task.include_in_cron_chain;
+                const type = task.id === 1 ? 'sql' : 'task';
+                
+                return `
+                    <tr class="${state.isChainRunning ? 'disabled' : ''}">
+                        <td class="col-order">${task.order}</td>
+                        <td class="col-id">${task.id}</td>
+                        <td class="col-name">
+                            ${escapeHtml(task.name)}
+                            ${inChain ? '<span class="chain-indicator">Chain</span>' : ''}
+                        </td>
+                        <td class="col-enabled">
+                            <span class="badge ${inChain ? 'enabled' : 'disabled'}">
+                                ${inChain ? '✓' : '○'}
+                            </span>
+                        </td>
+                        <td class="col-pause">5</td>
+                        <td class="col-stop">
+                            <span class="badge ${inChain ? 'enabled' : 'disabled'}">
+                                ${inChain ? '✓' : '○'}
+                            </span>
+                        </td>
+                        <td class="col-type">
+                            <span class="type-badge ${type}">${type.toUpperCase()}</span>
+                        </td>
+                        <td class="col-action">
+                            <button class="btn-run ${status === 'running' ? 'running' : ''}" 
+                                    onclick="runTask(${task.id})"
+                                    ${state.isChainRunning ? 'disabled' : ''}>
+                                ${status === 'running' ? 'Running...' : 'Run'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Update count
+            document.getElementById('taskCount').textContent = `${state.tasks.length} tasks`;
+        }
+        
+        // Run single task
+        async function runTask(taskId) {
+            if (state.isChainRunning || state.taskStatuses[taskId] === 'running') return;
+            
+            const task = state.tasks.find(t => t.id == taskId);
+            if (!task) return;
+            
+            updateTaskStatus(taskId, 'running');
+            
+            // Clear previous JSON content and open modal
+            clearJsonDisplay();
+            openModal();
+            setModalStatus('loading', `Running: ${task.name}...`);
+            
+            const formData = new URLSearchParams({
+                action: 'nce_run_job',
+                nonce: CONFIG.nonce,
+                id: taskId
+            });
+            
+            try {
+                const response = await fetch(CONFIG.ajaxUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateTaskStatus(taskId, 'success');
+                    setModalStatus('success', `Success: ${task.name}`);
+                } else {
+                    updateTaskStatus(taskId, 'error');
+                    setModalStatus('error', `Error: ${task.name}`);
+                }
+                
+                displayJson({
+                    timestamp: new Date().toLocaleString(),
+                    task_id: taskId,
+                    task_name: task.name,
+                    response: result.data || result
+                });
+                
+            } catch (error) {
+                updateTaskStatus(taskId, 'error');
+                setModalStatus('error', 'Network Error');
+                displayJson({
+                    timestamp: new Date().toLocaleString(),
+                    task_id: taskId,
+                    error: error.message
+                });
+            }
+        }
+        
+        // Run chain
+        async function runChain() {
+            if (state.isChainRunning) return;
+            
+            state.isChainRunning = true;
+            disableAllControls();
+            
+            // Clear previous JSON content and open modal
+            clearJsonDisplay();
+            openModal();
+            setModalStatus('loading', 'Running chain...');
+            
+            state.tasks.forEach(task => {
+                if (task.include_in_cron_chain) {
+                    updateTaskStatus(task.id, 'running');
+                }
+            });
+            
+            const formData = new URLSearchParams({
+                action: 'nce_run_chain',
+                nonce: CONFIG.nonce,
+                debug: '1'
+            });
+            
+            try {
+                const response = await fetch(CONFIG.ajaxUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.tasks) {
+                    Object.entries(result.data.tasks).forEach(([id, taskResult]) => {
+                        updateTaskStatus(id, taskResult.success ? 'success' : 'error');
+                    });
+                }
+                
+                if (result.success) {
+                    setModalStatus('success', 'Chain completed');
+                } else {
+                    setModalStatus('error', 'Chain failed');
+                }
+                
+                displayJson({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'chain',
+                    response: result.data || result
+                });
+                
+            } catch (error) {
+                setModalStatus('error', 'Network Error');
+                displayJson({
+                    timestamp: new Date().toLocaleString(),
+                    type: 'chain',
+                    error: error.message
+                });
+                
+                state.tasks.forEach(task => {
+                    if (state.taskStatuses[task.id] === 'running') {
+                        updateTaskStatus(task.id, 'error');
+                    }
+                });
+            } finally {
+                state.isChainRunning = false;
+                enableAllControls();
+            }
+        }
+        
+        // UI helpers
+        function updateTaskStatus(taskId, status) {
+            state.taskStatuses[taskId] = status;
+            renderTasks();
+        }
+        
+        function updateChainButton() {
+            const btn = document.getElementById('runChainBtn');
+            const chainTasks = state.tasks.filter(t => t.include_in_cron_chain);
+            btn.textContent = `Run Full Sync`;
+            btn.disabled = chainTasks.length === 0;
+            btn.onclick = runChain;
+        }
+        
+        function disableAllControls() {
+            renderTasks();
+        }
+        
+        function enableAllControls() {
+            updateChainButton();
+            renderTasks();
+        }
+        
+        // Modal functions
+        function openModal() {
+            document.getElementById('jsonModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('jsonModal').classList.remove('active');
+        }
+        
+        function setModalStatus(type, text) {
+            const el = document.getElementById('modalStatus');
+            el.className = `modal-status ${type}`;
+            el.textContent = text;
+        }
+        
+        function clearJsonDisplay() {
+            const display = document.getElementById('jsonDisplay');
+            display.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--neutral-500);"><span class="loading-spinner"></span> Waiting for response...</div>';
+            state.currentJsonData = null;
+        }
+        
+        function displayJson(data) {
+            state.currentJsonData = data;
+            document.getElementById('jsonDisplay').innerHTML = renderJsonTree(data);
+        }
+        
+        function renderJsonTree(data, key = null, level = 0) {
+            const type = Array.isArray(data) ? 'array' : typeof data;
+            let html = '';
+            
+            if (key !== null) {
+                html += `<span class="json-key">"${escapeHtml(key)}"</span>: `;
+            }
+            
+            if (data === null) return html + '<span class="json-null">null</span>';
+            if (type === 'string') return html + `<span class="json-string">"${escapeHtml(data)}"</span>`;
+            if (type === 'number') return html + `<span class="json-number">${data}</span>`;
+            if (type === 'boolean') return html + `<span class="json-boolean">${data}</span>`;
+            
+            if (type === 'array' || type === 'object') {
+                const isArray = type === 'array';
+                const entries = isArray ? data : Object.entries(data);
+                const count = isArray ? data.length : Object.keys(data).length;
+                const openBracket = isArray ? '[' : '{';
+                const closeBracket = isArray ? ']' : '}';
+                const id = 'node_' + Math.random().toString(36).substr(2, 9);
+                
+                if (count === 0) return html + `<span class="json-bracket">${openBracket}${closeBracket}</span>`;
+                
+                const collapsed = level > 2;
+                html += `<span class="json-toggle" onclick="toggleNode('${id}')">${collapsed ? '▶' : '▼'}</span>`;
+                html += `<span class="json-bracket">${openBracket}</span>`;
+                html += `<span class="json-summary" id="${id}_summary"${collapsed ? '' : ' style="display:none"'}> ${count} items </span>`;
+                html += `<div class="json-collapsible${collapsed ? ' json-collapsed' : ''}" id="${id}">`;
+                
+                if (isArray) {
+                    data.forEach((item, i) => {
+                        html += `<div>${renderJsonTree(item, null, level + 1)}${i < count - 1 ? ',' : ''}</div>`;
+                    });
+                } else {
+                    entries.forEach(([k, v], i) => {
+                        html += `<div>${renderJsonTree(v, k, level + 1)}${i < count - 1 ? ',' : ''}</div>`;
+                    });
+                }
+                
+                html += `</div><span class="json-bracket">${closeBracket}</span>`;
+                return html;
+            }
+            
+            return html + String(data);
+        }
+        
+        function toggleNode(id) {
+            const el = document.getElementById(id);
+            const summary = document.getElementById(id + '_summary');
+            const toggle = el.previousElementSibling.previousElementSibling;
+            
+            if (el.classList.contains('json-collapsed')) {
+                el.classList.remove('json-collapsed');
+                summary.style.display = 'none';
+                toggle.textContent = '▼';
+            } else {
+                el.classList.add('json-collapsed');
+                summary.style.display = '';
+                toggle.textContent = '▶';
+            }
+        }
+        
+        function expandAll() {
+            document.querySelectorAll('.json-collapsed').forEach(el => el.classList.remove('json-collapsed'));
+            document.querySelectorAll('.json-summary').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.json-toggle').forEach(el => el.textContent = '▼');
+        }
+        
+        function collapseAll() {
+            document.querySelectorAll('.json-collapsible').forEach(el => el.classList.add('json-collapsed'));
+            document.querySelectorAll('.json-summary').forEach(el => el.style.display = '');
+            document.querySelectorAll('.json-toggle').forEach(el => el.textContent = '▶');
+        }
+        
+        function copyJson() {
+            if (state.currentJsonData) {
+                navigator.clipboard.writeText(JSON.stringify(state.currentJsonData, null, 2));
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = originalText, 1500);
+            }
+        }
+        
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        
+        // Close modal on overlay click or Escape key
+        document.getElementById('jsonModal').addEventListener('click', (e) => {
+            if (e.target.id === 'jsonModal') closeModal();
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>

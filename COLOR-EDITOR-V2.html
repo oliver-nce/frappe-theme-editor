@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <title>NCE Design System - Color Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: white; /* Neutral for Safari toolbar */
+            color: var(--page-text, #1a1a1a);
+            line-height: 1.4;
+        }
+        
+        .page-wrapper {
+            min-height: 100vh;
+            padding: 24px;
+            background: var(--page-bg);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--container-bg, white);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--container-border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--container-bg, white);
+            margin: -24px -24px 24px -24px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--container-border);
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        h1 { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+        .header p { font-size: 11px; color: var(--muted-text, #666); margin: 0; }
+        
+        .header-buttons { display: flex; gap: 8px; }
+        
+        .section { margin-bottom: 28px; }
+        
+        .section-row {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        
+        .section-row .section {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        @media (max-width: 800px) {
+            .section-row {
+                flex-direction: column;
+            }
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .section-title { font-size: 16px; font-weight: 600; }
+        
+        /* Base button styles */
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 
+                0 1px 3px rgba(0,0,0,0.12),
+                inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 
+                0 2px 6px rgba(0,0,0,0.15),
+                inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        /* Primary button variant (extends .btn) */
+        .btn-primary {
+            background: var(--btn-gradient);
+            color: var(--btn-text);
+        }
+        
+        /* Edit button (standalone - not used with .btn class) */
+        .edit-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--btn-gradient);
+            color: var(--btn-text);
+            box-shadow: 
+                0 1px 3px rgba(0,0,0,0.12),
+                inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        .edit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 
+                0 2px 6px rgba(0,0,0,0.15),
+                inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .color-swatch {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        
+        .color-swatch.clickable { cursor: pointer; }
+        .color-swatch.clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            border-color: var(--accent-color, #667eea);
+        }
+        
+        .color-box { height: 50px; width: 100%; position: relative; }
+        
+        .color-box-input {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .color-box-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+        
+        .color-box-label {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 3;
+        }
+        
+        .color-info { padding: 6px; background: white; }
+        .color-name { font-size: 10px; font-weight: 600; color: #1a1a1a; }
+        .color-value { font-size: 9px; font-family: monospace; color: #666; }
+        
+        .editor-panel {
+            background: var(--panel-bg, #f9f9f9);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            position: relative;
+        }
+        
+        .close-editor {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: #e0e0e0;
+            border: none;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-editor:hover { background: #d44444; color: white; }
+        
+        .editor-panel label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .hue-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .hue-slider {
+            flex: 1;
+            height: 36px;
+            border-radius: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .hue-slider.rainbow {
+            background: linear-gradient(to right,
+                hsl(0,100%,50%), hsl(60,100%,50%), hsl(120,100%,50%),
+                hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%)
+            );
+        }
+        
+        .hue-slider.neutral {
+            background: linear-gradient(to right,
+                hsl(240,5%,80%), hsl(180,5%,80%), hsl(120,5%,80%),
+                hsl(60,5%,80%), hsl(0,5%,80%)
+            );
+        }
+        
+        .hue-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px; height: 40px;
+            background: white;
+            border: 3px solid #333;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .hue-input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .hue-input:focus { outline: none; border-color: var(--accent-color, #667eea); }
+        
+        .button-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        
+        /* Secondary button variant */
+        .btn-secondary { 
+            background: var(--btn-secondary-gradient);
+            color: var(--btn-secondary-text);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px; right: 20px;
+            background: var(--success-color, #10b981);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .notification.show { opacity: 1; transform: translateY(0); }
+        .hidden { display: none; }
+        
+        /* Modal Dialog */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal {
+            background: var(--container-bg, white);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--page-text);
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: var(--muted-text);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(var(--accent-color), 0.1);
+        }
+        
+        .modal-success {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        /* Gradient Editor */
+        .gradient-editor {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
+        
+        .gradient-preview-area {
+            flex: 0 0 200px;
+        }
+        
+        .gradient-preview-btn {
+            width: 100%;
+            padding: 16px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+            box-shadow: 
+                0 1px 3px rgba(0,0,0,0.12),
+                inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        .gradient-preview-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 4px 12px rgba(0,0,0,0.15),
+                inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        .gradient-controls {
+            flex: 1;
+        }
+        
+        .gradient-control-group {
+            margin-bottom: 16px;
+        }
+        
+        .gradient-control-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        
+        .angle-presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        
+        .angle-preset {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .angle-preset:hover { border-color: var(--accent-color); }
+        .angle-preset.active { 
+            background: var(--accent-color); 
+            color: white; 
+            border-color: var(--accent-color);
+        }
+        
+        @media (max-width: 600px) {
+            .gradient-editor {
+                flex-direction: column;
+            }
+            .gradient-preview-area {
+                flex: none;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>🎨 Color Editor</h1>
+                <p>Click any swatch to customize • Use Save Theme to keep your work</p>
+            </div>
+            <div class="header-buttons">
+                <button class="btn btn-primary" onclick="copyCSS()">Copy CSS</button>
+                <button class="btn btn-secondary" onclick="showSaveModal()">Save Theme</button>
+                <button class="btn btn-secondary" onclick="showLoadModal()">Load Theme</button>
+                <button class="btn btn-secondary" onclick="showResetModal()">Reset</button>
+            </div>
+        </div>
+        
+        <!-- Primary Colors -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Primary Colors (<span id="primaryLabel">Blue</span> Scale)</h2>
+                <button class="edit-btn" onclick="toggleEditor('primary')">Edit</button>
+            </div>
+            <div class="color-grid" id="primaryGrid"></div>
+            <div class="editor-panel hidden" id="editor-primary">
+                <button class="close-editor" onclick="toggleEditor('primary')">✕</button>
+                <label>Hue (0-360)</label>
+                <div class="hue-slider-row">
+                    <input type="range" class="hue-slider rainbow" id="primaryHue" min="0" max="360" value="210">
+                    <input type="number" class="hue-input" id="primaryHueNum" min="0" max="360" value="210">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Neutral Colors -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Neutral Colors (<span id="neutralLabel">Cool</span> Gray)</h2>
+                <button class="edit-btn" onclick="toggleEditor('neutral')">Edit</button>
+            </div>
+            <div class="color-grid" id="neutralGrid"></div>
+            <div class="editor-panel hidden" id="editor-neutral">
+                <button class="close-editor" onclick="toggleEditor('neutral')">✕</button>
+                <label>Hue (0-360) - Affects gray temperature</label>
+                <div class="hue-slider-row">
+                    <input type="range" class="hue-slider neutral" id="neutralHue" min="0" max="360" value="210">
+                    <input type="number" class="hue-input" id="neutralHueNum" min="0" max="360" value="210">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Semantic & Window Controls (side by side) -->
+        <div class="section-row">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Semantic Colors</h2>
+                </div>
+                <div class="color-grid" id="semanticGrid"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Window Controls</h2>
+                </div>
+                <div class="color-grid" id="windowGrid"></div>
+            </div>
+        </div>
+        
+        <!-- Buttons -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Buttons</h2>
+            </div>
+            <div class="gradient-editor">
+                <div class="gradient-preview-area">
+                    <button class="gradient-preview-btn" id="gradientPreview">Preview Button</button>
+                    <div style="font-size: 10px; color: #666; text-align: center;">Uses primary color + gradient</div>
+                </div>
+                <div class="gradient-controls">
+                    <div class="gradient-control-group">
+                        <label>Default Shade (for --primary, --neutral)</label>
+                        <div class="angle-presets">
+                            <button class="angle-preset shade-preset" data-shade="50" onclick="setDefaultShade(50)">50</button>
+                            <button class="angle-preset shade-preset" data-shade="100" onclick="setDefaultShade(100)">100</button>
+                            <button class="angle-preset shade-preset" data-shade="200" onclick="setDefaultShade(200)">200</button>
+                            <button class="angle-preset shade-preset" data-shade="300" onclick="setDefaultShade(300)">300</button>
+                            <button class="angle-preset shade-preset" data-shade="400" onclick="setDefaultShade(400)">400</button>
+                            <button class="angle-preset shade-preset" data-shade="500" onclick="setDefaultShade(500)">500</button>
+                            <button class="angle-preset shade-preset" data-shade="600" onclick="setDefaultShade(600)">600</button>
+                            <button class="angle-preset shade-preset" data-shade="700" onclick="setDefaultShade(700)">700</button>
+                            <button class="angle-preset shade-preset" data-shade="800" onclick="setDefaultShade(800)">800</button>
+                            <button class="angle-preset shade-preset" data-shade="900" onclick="setDefaultShade(900)">900</button>
+                        </div>
+                    </div>
+                    <div class="gradient-control-group">
+                        <label>Light Direction</label>
+                        <div class="angle-presets">
+                            <button class="angle-preset" data-angle="none" onclick="setGradientAngle('none')">◼ No Gradient</button>
+                            <button class="angle-preset" data-angle="180" onclick="setGradientAngle(180)">↓ Top Lit</button>
+                            <button class="angle-preset" data-angle="0" onclick="setGradientAngle(0)">↑ Bottom Lit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    </div>
+    
+    <div class="notification" id="notification">Copied</div>
+    
+    <!-- Modal Dialog -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div id="modalContent"></div>
+        </div>
+    </div>
+    
+    <script>
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MODAL DIALOG
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    function showResetModal() {
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">Reset to Defaults</div>
+            <div class="modal-message">This will reset all colors to default values. Your current theme will be lost unless saved first.</div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmReset()">Reset</button>
+            </div>
+        `;
+        document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    function confirmReset() {
+        closeModal();
+        localStorage.removeItem('colorEditorState');
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        updateUI();
+    }
+    
+    function showLoadModal() {
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">Load Theme</div>
+            <div class="modal-message">Loading a theme will overwrite your current settings. Save your current theme first if you want to keep it.</div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmLoad()">Continue</button>
+            </div>
+        `;
+        document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    function confirmLoad() {
+        closeModal();
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const theme = JSON.parse(event.target.result);
+                    
+                    if (!theme.colors) {
+                        showErrorModal('Invalid theme file format');
+                        return;
+                    }
+                    
+                    if (theme.colors.primary) {
+                        state.primaryHue = theme.colors.primary.hue;
+                        state.defaultShade = theme.colors.primary.defaultShade || 400;
+                    }
+                    if (theme.colors.neutral) state.neutralHue = theme.colors.neutral.hue;
+                    if (theme.colors.semantic) {
+                        if (theme.colors.semantic.success) state.success = theme.colors.semantic.success;
+                        if (theme.colors.semantic.error) state.error = theme.colors.semantic.error;
+                        if (theme.colors.semantic.warning) state.warning = theme.colors.semantic.warning;
+                    }
+                    if (theme.colors.window) {
+                        if (theme.colors.window.close) state.close = theme.colors.window.close;
+                        if (theme.colors.window.minimize) state.minimize = theme.colors.window.minimize;
+                        if (theme.colors.window.maximize) state.maximize = theme.colors.window.maximize;
+                    }
+                    if (theme.colors.buttons?.gradient) {
+                        state.gradient.angle = theme.colors.buttons.gradient.angle;
+                    }
+                    
+                    updateUI();
+                } catch (err) {
+                    showErrorModal('Failed to load theme: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+    
+    function showSaveModal() {
+        const timestamp = new Date().toISOString().split('T')[0];
+        const defaultName = `NCE Theme ${timestamp}`;
+        
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">Save Theme</div>
+            <div class="modal-message">Choose a name for your theme:</div>
+            <input type="text" class="modal-input" id="themeNameInput" value="${defaultName}" placeholder="Theme name">
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmSave()">Save</button>
+            </div>
+        `;
+        
+        document.getElementById('modalOverlay').classList.add('show');
+        
+        setTimeout(() => {
+            const input = document.getElementById('themeNameInput');
+            input.focus();
+            input.select();
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmSave();
+            });
+        }, 100);
+    }
+    
+    function confirmSave() {
+        const themeName = document.getElementById('themeNameInput').value.trim() || 'NCE Theme';
+        const timestamp = new Date().toISOString().split('T')[0];
+        
+        // W3C Design Tokens Format (2025.10)
+        // https://www.w3.org/community/design-tokens/
+        const theme = {
+            "$name": themeName,
+            "$description": "NCE Design System theme for business web applications and Frappe applications. Hue-based color system with AI agent guidance.",
+            "$version": "1.0.0",
+            "$created": new Date().toISOString(),
+            
+            // ═══════════════════════════════════════════════════════════════
+            // $extensions - Custom metadata including AI agent guidance
+            // ═══════════════════════════════════════════════════════════════
+            "$extensions": {
+                "nce-design-system": {
+                    "philosophy": {
+                        "purpose": "Business web applications and Frappe applications",
+                        "principles": [
+                            "Usability, clarity, and visual hierarchy",
+                            "Color hue as the central organizing principle",
+                            "Style differences reflect functional distinctions, not decorative whim",
+                            "Color and emphasis must communicate meaning"
+                        ],
+                        "consistency": "Where a style is defined for a UI element, apply it consistently to the same element type across the application. This ensures visual continuity and reinforces learned user behavior."
+                    },
+                    "agentGuidance": {
+                        "colorSelection": {
+                            "hueSystem": "Each hue provides related variants with controlled saturation and lightness. These variants work together as coherent palettes, not isolated colors.",
+                            "textContrast": "Text colors are automatically chosen to ensure sufficient contrast and legibility, especially for alerts and status elements.",
+                            "actionWeight": {
+                                "highImpact": "Darker colors (shades 600-900) for irreversible or high-impact actions: Save, Reset, Exit, Quit, Delete",
+                                "lowImpact": "Lighter variants (shades 100-400) for lower-priority or less consequential actions"
+                            }
+                        },
+                        "neutralUsage": {
+                            "purpose": "Provide visual rest and contrast where strong colors would be distracting",
+                            "applications": [
+                                "Page backgrounds",
+                                "Alternating row backgrounds in lists",
+                                "Low-contrast structural elements"
+                            ]
+                        },
+                        "decisionRules": {
+                            "undefinedElements": "If a UI element is not explicitly defined, choose styles within the existing theme gamut, maintaining consistency with the overall design system.",
+                            "functionalAreas": "Elements within the same functional area should NOT use different colors for visual variety alone.",
+                            "meaningfulDifference": "Style differences must reflect functional distinctions, not decorative whim.",
+                            "whenInDoubt": "Choose the more subtle/neutral option — it is easier to add emphasis than remove it."
+                        },
+                        "rules": {
+                            "do": [
+                                "Use the defined shade scale (50-900) — never interpolate custom lightness values",
+                                "Match button importance to action consequence (darker = more impactful)",
+                                "Use semantic colors (success/error/warning) only for their intended meaning",
+                                "Maintain consistent element styling within functional areas"
+                            ],
+                            "dont": [
+                                "Never use raw hex/rgb colors — always reference theme variables",
+                                "Never mix hues within the same component for decoration",
+                                "Never use primary colors for neutral structural elements",
+                                "Never choose colors based on visual variety alone"
+                            ]
+                        }
+                    },
+                    "shadeGuide": {
+                        "50-100": "Backgrounds, subtle highlights, hover states on light elements",
+                        "200-300": "Borders, dividers, disabled backgrounds, secondary surfaces",
+                        "400-500": "Default interactive elements, icons, secondary text",
+                        "600-700": "Primary buttons, links, active states, emphasis",
+                        "800-900": "High-impact actions, critical buttons, primary text"
+                    },
+                    "componentGuidance": {
+                        "buttons": {
+                            "primary": "High-impact actions. Use primary-600 to primary-800.",
+                            "secondary": "Standard actions. Use primary-300 to primary-500.",
+                            "tertiary": "Low-priority actions. Use neutral-200 with neutral-700 text.",
+                            "danger": "Destructive actions. Use error hue at shade 600-700."
+                        },
+                        "backgrounds": {
+                            "page": "neutral-50 or neutral-100",
+                            "card": "white or neutral-50",
+                            "alternatingRows": "Alternate between neutral-50 and white",
+                            "selected": "primary-100",
+                            "hover": "primary-50 or neutral-100"
+                        },
+                        "text": {
+                            "primary": "neutral-900 (high emphasis)",
+                            "secondary": "neutral-600 (medium emphasis)",
+                            "disabled": "neutral-400",
+                            "onDarkBackground": "neutral-50 or white"
+                        },
+                        "borders": {
+                            "subtle": "neutral-200",
+                            "default": "neutral-300",
+                            "emphasis": "primary-300",
+                            "focus": "primary-500"
+                        }
+                    }
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // PRIMARY COLOR - Brand hue with shade scale
+            // ═══════════════════════════════════════════════════════════════
+            "primary": {
+                "$description": "Primary brand color. Use for CTAs, links, interactive elements, and brand emphasis.",
+                "hue": {
+                    "$type": "number",
+                    "$value": state.primaryHue,
+                    "$description": "Primary hue value (0-360 degrees on color wheel)"
+                },
+                "defaultShade": {
+                    "$type": "number",
+                    "$value": state.defaultShade,
+                    "$description": "Default shade for primary color (50-900)"
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // NEUTRAL COLOR - Grays and structural elements
+            // ═══════════════════════════════════════════════════════════════
+            "neutral": {
+                "$description": "Neutral colors for backgrounds, borders, and structural elements. Use -1 for pure gray, or 0-360 for tinted neutrals.",
+                "hue": {
+                    "$type": "number",
+                    "$value": state.neutralHue,
+                    "$description": "Neutral hue value (-1 for pure gray, 0-360 for tinted)"
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // SEMANTIC COLORS - Status and feedback
+            // ═══════════════════════════════════════════════════════════════
+            "semantic": {
+                "$description": "Status colors for user feedback. Use consistently to build user recognition.",
+                
+                "success": {
+                    "$type": "color",
+                    "$value": `hsl(${state.success.h}, ${state.success.s}%, ${state.success.l}%)`,
+                    "$description": "Positive outcomes, completed actions, valid states, confirmations. Use for: form confirmations, successful operations, valid inputs, completed steps, positive badges (Active, Approved, Paid). NOT for: decorative green, unrelated positive emotions.",
+                    "$extensions": {
+                        "nce-hsl": { "h": state.success.h, "s": state.success.s, "l": state.success.l }
+                    }
+                },
+                "error": {
+                    "$type": "color",
+                    "$value": `hsl(${state.error.h}, ${state.error.s}%, ${state.error.l}%)`,
+                    "$description": "Failures, invalid states, destructive actions, critical problems. Use for: validation errors, failed operations, required fields, destructive buttons (Delete, Remove), negative badges (Rejected, Failed, Overdue). NOT for: warnings, attention-grabbing decoration.",
+                    "$extensions": {
+                        "nce-hsl": { "h": state.error.h, "s": state.error.s, "l": state.error.l }
+                    }
+                },
+                "warning": {
+                    "$type": "color",
+                    "$value": `hsl(${state.warning.h}, ${state.warning.s}%, ${state.warning.l}%)`,
+                    "$description": "Caution states, potential issues, actions needing attention. Use for: unsaved changes, approaching limits, non-destructive consequential actions (Archive, Disable), pending states, caution badges (Pending Review, Expiring Soon, Draft). NOT for: actual errors, informational notices.",
+                    "$extensions": {
+                        "nce-hsl": { "h": state.warning.h, "s": state.warning.s, "l": state.warning.l }
+                    }
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // WINDOW CONTROLS - macOS-style traffic light buttons
+            // ═══════════════════════════════════════════════════════════════
+            "windowControls": {
+                "$description": "Window control button colors (macOS traffic light style)",
+                
+                "close": {
+                    "$type": "color",
+                    "$value": `hsl(${state.close.h}, ${state.close.s}%, ${state.close.l}%)`,
+                    "$description": "Close/exit button color",
+                    "$extensions": {
+                        "nce-hsl": { "h": state.close.h, "s": state.close.s, "l": state.close.l }
+                    }
+                },
+                "minimize": {
+                    "$type": "color",
+                    "$value": `hsl(${state.minimize.h}, ${state.minimize.s}%, ${state.minimize.l}%)`,
+                    "$description": "Minimize button color",
+                    "$extensions": {
+                        "nce-hsl": { "h": state.minimize.h, "s": state.minimize.s, "l": state.minimize.l }
+                    }
+                },
+                "maximize": {
+                    "$type": "color",
+                    "$value": `hsl(${state.maximize.h}, ${state.maximize.s}%, ${state.maximize.l}%)`,
+                    "$description": "Maximize button color",
+                    "$extensions": {
+                        "nce-hsl": { "h": state.maximize.h, "s": state.maximize.s, "l": state.maximize.l }
+                    }
+                }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // BUTTON GRADIENT - Gradient configuration
+            // ═══════════════════════════════════════════════════════════════
+            "buttonGradient": {
+                "$description": "Button gradient configuration for depth and visual interest",
+                
+                "angle": {
+                    "$type": "number",
+                    "$value": state.gradient.angle,
+                    "$description": "Gradient angle in degrees (180 = top-lit, 0 = bottom-lit)"
+                }
+            }
+        };
+        
+        const json = JSON.stringify(theme, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${themeName.toLowerCase().replace(/\s+/g, '-')}-${timestamp}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-success">
+                <div class="modal-title">Theme Saved</div>
+                <div class="modal-message">${themeName} has been downloaded</div>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            closeModal();
+        }, 2000);
+    }
+    
+    function showErrorModal(message) {
+        document.getElementById('modalContent').innerHTML = `
+            <div class="modal-title">Error</div>
+            <div class="modal-message">${message}</div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="closeModal()">OK</button>
+            </div>
+        `;
+        document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('show');
+    }
+    
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'modalOverlay') {
+            closeModal();
+        }
+    });
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CONFIGURATION
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const CONFIG = {
+        primaryShades: [
+            { shade: 50,  s: 100, l: 97 },
+            { shade: 100, s: 98,  l: 94 },
+            { shade: 200, s: 95,  l: 88 },
+            { shade: 300, s: 92,  l: 80 },
+            { shade: 400, s: 88,  l: 70 },
+            { shade: 500, s: 83,  l: 60 },
+            { shade: 600, s: 78,  l: 50 },
+            { shade: 700, s: 73,  l: 42 },
+            { shade: 800, s: 68,  l: 37 },
+            { shade: 900, s: 65,  l: 35 }
+        ],
+        
+        neutralShades: [
+            { shade: 50,  s: 5,  l: 98 },
+            { shade: 100, s: 5,  l: 96 },
+            { shade: 200, s: 5,  l: 92 },
+            { shade: 300, s: 5,  l: 85 },
+            { shade: 400, s: 5,  l: 73 },
+            { shade: 500, s: 6,  l: 58 },
+            { shade: 600, s: 7,  l: 46 },
+            { shade: 700, s: 7,  l: 38 },
+            { shade: 800, s: 8,  l: 32 },
+            { shade: 900, s: 8,  l: 30 }
+        ],
+        
+        semanticColors: [
+            { id: 'success', name: 'Success', default: { h: 150, s: 75, l: 85 } },
+            { id: 'error',   name: 'Error',   default: { h: 0,   s: 85, l: 90 } },
+            { id: 'warning', name: 'Warning', default: { h: 45,  s: 90, l: 85 } }
+        ],
+        
+        windowColors: [
+            { id: 'close',    name: 'Close',    default: { h: 0,   s: 70, l: 55 } },
+            { id: 'minimize', name: 'Minimize', default: { h: 45,  s: 70, l: 55 } },
+            { id: 'maximize', name: 'Maximize', default: { h: 120, s: 50, l: 50 } }
+        ]
+    };
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const DEFAULT_STATE = {
+        primaryHue: 210,
+        neutralHue: 210,
+        success:  { h: 150, s: 75, l: 85 },
+        error:    { h: 0,   s: 85, l: 90 },
+        warning:  { h: 45,  s: 90, l: 85 },
+        close:    { h: 0,   s: 70, l: 55 },
+        minimize: { h: 45,  s: 70, l: 55 },
+        maximize: { h: 120, s: 50, l: 50 },
+        gradient: {
+            angle: 180,
+            stops: { top: 96, mid: 88, bottom: 82 }
+        },
+        defaultShade: 400
+    };
+    
+    let state = loadState();
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    function hslToHex(h, s, l) {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = n => {
+            const k = (n + h / 30) % 12;
+            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+        return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    }
+    
+    function hexToHSL(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return { h: 0, s: 0, l: 50 };
+        let r = parseInt(result[1], 16) / 255;
+        let g = parseInt(result[2], 16) / 255;
+        let b = parseInt(result[3], 16) / 255;
+        
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+        
+        if (max === min) {
+            h = s = 0;
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                case g: h = ((b - r) / d + 2) / 6; break;
+                case b: h = ((r - g) / d + 4) / 6; break;
+            }
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+    
+    function getHueName(hue) {
+        if (hue < 30) return 'Red';
+        if (hue < 60) return 'Orange';
+        if (hue < 90) return 'Yellow';
+        if (hue < 150) return 'Green';
+        if (hue < 210) return 'Cyan';
+        if (hue < 270) return 'Blue';
+        if (hue < 330) return 'Purple';
+        return 'Pink';
+    }
+    
+    function getTemperature(hue) {
+        if ((hue >= 0 && hue < 60) || hue >= 300) return 'Warm';
+        if (hue >= 180 && hue < 300) return 'Cool';
+        return 'Neutral';
+    }
+    
+    function getContrastColor(h, s, l) {
+        return l > 60 ? hslToHex(h, 60, 20) : hslToHex(h, 20, 95);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PERSISTENCE
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    function loadState() {
+        // Always return default state - no localStorage persistence
+        // Users must explicitly save/load themes via buttons
+        return { ...DEFAULT_STATE };
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // UI GENERATION
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    function createScaleSwatch(prefix, shade, hex) {
+        return `
+            <div class="color-swatch clickable" onclick="toggleEditor('${prefix}')">
+                <div class="color-box">
+                    <div class="color-box-bg" id="bg-${prefix}-${shade}" style="background:${hex}"></div>
+                </div>
+                <div class="color-info">
+                    <div class="color-name">${prefix}-${shade}</div>
+                    <div class="color-value" id="hex-${prefix}-${shade}">${hex}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function createPickerSwatch(id, name, hex, labelColor) {
+        return `
+            <div class="color-swatch clickable">
+                <div class="color-box">
+                    <div class="color-box-bg" id="bg-${id}" style="background:${hex}"></div>
+                    <input type="color" class="color-box-input" id="input-${id}" value="${hex}">
+                    <span class="color-box-label" id="label-${id}" style="color:${labelColor}">Click to Edit</span>
+                </div>
+                <div class="color-info">
+                    <div class="color-name">${name}</div>
+                    <div class="color-value" id="hex-${id}">${hex}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function buildUI() {
+        // Primary grid
+        let primaryHTML = '';
+        CONFIG.primaryShades.forEach(({ shade, s, l }) => {
+            const hex = hslToHex(state.primaryHue, s, l);
+            primaryHTML += createScaleSwatch('primary', shade, hex);
+        });
+        document.getElementById('primaryGrid').innerHTML = primaryHTML;
+        
+        // Neutral grid
+        let neutralHTML = '';
+        CONFIG.neutralShades.forEach(({ shade, s, l }) => {
+            const hex = hslToHex(state.neutralHue, s, l);
+            neutralHTML += createScaleSwatch('neutral', shade, hex);
+        });
+        document.getElementById('neutralGrid').innerHTML = neutralHTML;
+        
+        // Semantic grid
+        let semanticHTML = '';
+        CONFIG.semanticColors.forEach(({ id, name }) => {
+            const c = state[id];
+            const hex = hslToHex(c.h, c.s, c.l);
+            const labelColor = getContrastColor(c.h, c.s, c.l);
+            semanticHTML += createPickerSwatch(id, name, hex, labelColor);
+        });
+        document.getElementById('semanticGrid').innerHTML = semanticHTML;
+        
+        // Window grid
+        let windowHTML = '';
+        CONFIG.windowColors.forEach(({ id, name }) => {
+            const c = state[id];
+            const hex = hslToHex(c.h, c.s, c.l);
+            const labelColor = getContrastColor(c.h, c.s, c.l);
+            windowHTML += createPickerSwatch(id, name, hex, labelColor);
+        });
+        document.getElementById('windowGrid').innerHTML = windowHTML;
+        
+        // Bind color picker events
+        [...CONFIG.semanticColors, ...CONFIG.windowColors].forEach(({ id }) => {
+            const input = document.getElementById('input-' + id);
+            if (input) {
+                input.addEventListener('input', function() {
+                    state[id] = hexToHSL(this.value);
+                    updateUI();
+                });
+            }
+        });
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // UI UPDATE
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    function updateUI() {
+        // Update primary swatches
+        CONFIG.primaryShades.forEach(({ shade, s, l }) => {
+            const hex = hslToHex(state.primaryHue, s, l);
+            const bg = document.getElementById('bg-primary-' + shade);
+            const hexEl = document.getElementById('hex-primary-' + shade);
+            if (bg) bg.style.background = hex;
+            if (hexEl) hexEl.textContent = hex;
+        });
+        document.getElementById('primaryLabel').textContent = getHueName(state.primaryHue);
+        
+        // Update neutral swatches
+        CONFIG.neutralShades.forEach(({ shade, s, l }) => {
+            const hex = hslToHex(state.neutralHue, s, l);
+            const bg = document.getElementById('bg-neutral-' + shade);
+            const hexEl = document.getElementById('hex-neutral-' + shade);
+            if (bg) bg.style.background = hex;
+            if (hexEl) hexEl.textContent = hex;
+        });
+        document.getElementById('neutralLabel').textContent = getTemperature(state.neutralHue);
+        
+        // Update semantic & window colors
+        [...CONFIG.semanticColors, ...CONFIG.windowColors].forEach(({ id }) => {
+            const c = state[id];
+            const hex = hslToHex(c.h, c.s, c.l);
+            const bg = document.getElementById('bg-' + id);
+            const input = document.getElementById('input-' + id);
+            const hexEl = document.getElementById('hex-' + id);
+            const label = document.getElementById('label-' + id);
+            
+            if (bg) bg.style.background = hex;
+            if (input) input.value = hex;
+            if (hexEl) hexEl.textContent = hex;
+            if (label) label.style.color = getContrastColor(c.h, c.s, c.l);
+        });
+        
+        // Update page styling (self-style)
+        const accentHex = hslToHex(state.primaryHue, 75, 55);
+        const pageBg = hslToHex(state.primaryHue, 100, 97);      // primary-50
+        const containerBg = hslToHex(state.neutralHue, 5, 99);
+        const containerBorder = hslToHex(state.primaryHue, 70, 45); // primary-600
+        const panelBg = hslToHex(state.neutralHue, 5, 97);
+        const textColor = hslToHex(state.neutralHue, 10, 15);
+        const mutedText = hslToHex(state.neutralHue, 5, 45);
+        const successHex = hslToHex(state.success.h, state.success.s, Math.min(state.success.l, 45));
+        
+        document.documentElement.style.setProperty('--accent-color', accentHex);
+        document.documentElement.style.setProperty('--page-bg', pageBg);
+        document.documentElement.style.setProperty('--container-bg', containerBg);
+        document.documentElement.style.setProperty('--container-border', containerBorder);
+        document.documentElement.style.setProperty('--panel-bg', panelBg);
+        document.documentElement.style.setProperty('--page-text', textColor);
+        document.documentElement.style.setProperty('--muted-text', mutedText);
+        document.documentElement.style.setProperty('--success-color', successHex);
+        
+        // Button gradient - based on default shade
+        const g = state.gradient;
+        const isFlat = g.angle === 'none';
+        
+        // Get the lightness and saturation for the selected default shade
+        const defaultPrimary = CONFIG.primaryShades.find(s => s.shade === state.defaultShade) || { s: 85, l: 75 };
+        const defaultNeutral = CONFIG.neutralShades.find(s => s.shade === state.defaultShade) || { s: 5, l: 80 };
+        
+        // Calculate gradient stops based on default shade lightness
+        const baseL = defaultPrimary.l;
+        const topL = Math.min(98, baseL + 15);
+        const midL = baseL;
+        const bottomL = Math.max(30, baseL - 10);
+        
+        const baseNL = defaultNeutral.l;
+        const topNL = Math.min(98, baseNL + 10);
+        const midNL = baseNL;
+        const bottomNL = Math.max(50, baseNL - 8);
+        
+        let btnGradient, btnSecGradient;
+        if (isFlat) {
+            btnGradient = `hsl(${state.primaryHue}, ${defaultPrimary.s}%, ${midL}%)`;
+            btnSecGradient = `hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${midNL}%)`;
+        } else {
+            btnGradient = `linear-gradient(${g.angle}deg, 
+                hsl(${state.primaryHue}, ${defaultPrimary.s}%, ${topL}%) 0%, 
+                hsl(${state.primaryHue}, ${defaultPrimary.s}%, ${midL}%) 50%, 
+                hsl(${state.primaryHue}, ${defaultPrimary.s}%, ${bottomL}%) 100%)`;
+            btnSecGradient = `linear-gradient(${g.angle}deg, 
+                hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${topNL}%) 0%, 
+                hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${midNL}%) 50%, 
+                hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${bottomNL}%) 100%)`;
+        }
+        
+        // Text color - darker for light buttons, lighter for dark buttons
+        const btnText = baseL > 60 ? hslToHex(state.primaryHue, 70, 25) : hslToHex(state.primaryHue, 30, 95);
+        
+        document.documentElement.style.setProperty('--btn-gradient', btnGradient);
+        document.documentElement.style.setProperty('--btn-text', btnText);
+        
+        const btnSecText = baseNL > 60 ? hslToHex(state.neutralHue, 10, 20) : hslToHex(state.neutralHue, 5, 95);
+        
+        document.documentElement.style.setProperty('--btn-secondary-gradient', btnSecGradient);
+        document.documentElement.style.setProperty('--btn-secondary-text', btnSecText);
+        
+        // Slider fill uses primary color
+        const sliderBg = `linear-gradient(to right, hsl(${state.primaryHue}, 75%, 25%), hsl(${state.primaryHue}, 75%, 95%))`;
+        document.documentElement.style.setProperty('--stop-slider-bg', sliderBg);
+        
+        // Update slider values
+        document.getElementById('primaryHue').value = state.primaryHue;
+        document.getElementById('primaryHueNum').value = state.primaryHue;
+        document.getElementById('neutralHue').value = state.neutralHue;
+        document.getElementById('neutralHueNum').value = state.neutralHue;
+        
+        // Update gradient preview (uses primary hue)
+        updateGradientUI();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // EVENT HANDLERS
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    function toggleEditor(type) {
+        const panel = document.getElementById('editor-' + type);
+        panel.classList.toggle('hidden');
+    }
+    
+    // Default shade function
+    function setDefaultShade(shade) {
+        state.defaultShade = parseInt(shade);
+        updateUI();
+    }
+    
+    // Gradient functions
+    function setGradientAngle(angle) {
+        state.gradient.angle = angle === 'none' ? 'none' : parseInt(angle);
+        updateUI(); // Updates all buttons + gradient preview
+    }
+    
+    function updateGradientUI() {
+        // Update shade preset buttons
+        document.querySelectorAll('.shade-preset').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.shade) === state.defaultShade);
+        });
+        
+        // Update angle preset buttons
+        document.querySelectorAll('.angle-preset:not(.shade-preset)').forEach(btn => {
+            const btnAngle = btn.dataset.angle === 'none' ? 'none' : parseInt(btn.dataset.angle);
+            btn.classList.toggle('active', btnAngle === state.gradient.angle);
+        });
+        
+        // Update preview button - use default shade
+        const preview = document.getElementById('gradientPreview');
+        const h = state.primaryHue;
+        
+        // Get the lightness and saturation for the selected default shade
+        const defaultPrimary = CONFIG.primaryShades.find(s => s.shade === state.defaultShade) || { s: 85, l: 75 };
+        const baseL = defaultPrimary.l;
+        const s = defaultPrimary.s;
+        
+        // Calculate gradient stops based on default shade lightness
+        const topL = Math.min(98, baseL + 15);
+        const midL = baseL;
+        const bottomL = Math.max(30, baseL - 10);
+        
+        const angle = state.gradient.angle;
+        
+        if (angle === 'none') {
+            // Flat color - use base lightness
+            preview.style.background = `hsl(${h}, ${s}%, ${midL}%)`;
+        } else {
+            preview.style.background = `linear-gradient(${angle}deg, 
+                hsl(${h}, ${s}%, ${topL}%) 0%, 
+                hsl(${h}, ${s}%, ${midL}%) 50%, 
+                hsl(${h}, ${s}%, ${bottomL}%) 100%)`;
+        }
+        
+        // Text color - darker for light buttons, lighter for dark buttons
+        preview.style.color = baseL > 60 ? hslToHex(h, 70, 25) : hslToHex(h, 30, 95);
+    }
+    
+    function setupSlider(sliderId, numId, stateKey) {
+        const slider = document.getElementById(sliderId);
+        const num = document.getElementById(numId);
+        
+        slider.addEventListener('input', () => {
+            state[stateKey] = parseInt(slider.value);
+            num.value = slider.value;
+            updateUI();
+        });
+        
+        num.addEventListener('input', () => {
+            let val = parseInt(num.value) || 0;
+            val = Math.max(0, Math.min(360, val));
+            state[stateKey] = val;
+            slider.value = val;
+            updateUI();
+        });
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CSS EXPORT
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    function generateCSS() {
+        let css = `/* NCE Design System - Custom Colors */\n:root {\n`;
+        css += `    /* Primary Colors */\n`;
+        css += `    --primary-hue: ${state.primaryHue};\n`;
+        CONFIG.primaryShades.forEach(({ shade, s, l }) => {
+            css += `    --primary-${shade}: ${hslToHex(state.primaryHue, s, l)};\n`;
+        });
+        css += `\n    /* Primary Defaults (shade ${state.defaultShade}) */\n`;
+        css += `    --primary: var(--primary-${state.defaultShade});\n`;
+        css += `    --primary-light: var(--primary-${Math.max(50, state.defaultShade - 200)});\n`;
+        css += `    --primary-dark: var(--primary-${Math.min(900, state.defaultShade + 200)});\n`;
+        
+        css += `\n    /* Neutral Colors */\n`;
+        css += `    --neutral-hue: ${state.neutralHue};\n`;
+        CONFIG.neutralShades.forEach(({ shade, s, l }) => {
+            css += `    --neutral-${shade}: ${hslToHex(state.neutralHue, s, l)};\n`;
+        });
+        css += `\n    /* Neutral Defaults */\n`;
+        css += `    --neutral: var(--neutral-${state.defaultShade});\n`;
+        css += `    --neutral-light: var(--neutral-${Math.max(50, state.defaultShade - 200)});\n`;
+        css += `    --neutral-dark: var(--neutral-${Math.min(900, state.defaultShade + 200)});\n`;
+        
+        css += `\n    /* Semantic Colors */\n`;
+        CONFIG.semanticColors.forEach(({ id }) => {
+            const c = state[id];
+            css += `    --${id}: ${hslToHex(c.h, c.s, c.l)};\n`;
+        });
+        
+        css += `\n    /* Window Controls */\n`;
+        CONFIG.windowColors.forEach(({ id }) => {
+            const c = state[id];
+            css += `    --window-${id}: ${hslToHex(c.h, c.s, c.l)};\n`;
+        });
+        
+        css += `\n    /* Button Gradient */\n`;
+        const g = state.gradient;
+        const isFlat = g.angle === 'none';
+        
+        if (isFlat) {
+            css += `    --btn-gradient: hsl(var(--primary-hue), 75%, ${g.stops.mid}%); /* flat */\n`;
+            css += `    --btn-secondary-gradient: hsl(var(--neutral-hue), 5%, ${g.stops.mid}%); /* flat */\n`;
+        } else {
+            css += `    --btn-gradient-angle: ${g.angle}deg;\n`;
+            css += `    --btn-gradient: linear-gradient(${g.angle}deg, \n`;
+            css += `        hsl(var(--primary-hue), 75%, ${g.stops.top}%) 0%, \n`;
+            css += `        hsl(var(--primary-hue), 75%, ${g.stops.mid}%) 50%, \n`;
+            css += `        hsl(var(--primary-hue), 75%, ${g.stops.bottom}%) 100%);\n`;
+            css += `    --btn-secondary-gradient: linear-gradient(${g.angle}deg, \n`;
+            css += `        hsl(var(--neutral-hue), 5%, ${g.stops.top}%) 0%, \n`;
+            css += `        hsl(var(--neutral-hue), 5%, ${g.stops.mid}%) 50%, \n`;
+            css += `        hsl(var(--neutral-hue), 5%, ${g.stops.bottom}%) 100%);\n`;
+        }
+        css += `    --btn-text: hsl(var(--primary-hue), 60%, 25%);\n`;
+        css += `    --btn-secondary-text: hsl(var(--neutral-hue), 10%, 25%);\n`;
+        css += `\n    /* Button Styles */\n`;
+        css += `    --btn-shadow: 0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(0,0,0,0.1);\n`;
+        css += `    --btn-shadow-hover: 0 2px 6px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(0,0,0,0.1);\n`;
+        
+        css += `}\n`;
+        return css;
+    }
+    
+    function copyCSS() {
+        navigator.clipboard.writeText(generateCSS()).then(() => {
+            showNotification('Copied to clipboard');
+        });
+    }
+    
+    function showNotification(msg) {
+        const el = document.getElementById('notification');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2000);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    buildUI();
+    setupSlider('primaryHue', 'primaryHueNum', 'primaryHue');
+    setupSlider('neutralHue', 'neutralHueNum', 'neutralHue');
+    updateUI(); // Also updates gradient preview
+    
+    </script>
+</body>
+</html>

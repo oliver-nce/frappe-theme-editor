@@ -10,6 +10,7 @@ app_publisher = "NCE"
 app_description = "Visual theme editor for Frappe/ERPNext applications"
 app_email = "dev@ncesoccer.com"
 app_license = "MIT"
+# app_logo_url = "/assets/frappe_theme_editor/logo.png"
 
 # Required apps (dependencies)
 # required_apps = []
@@ -17,10 +18,10 @@ app_license = "MIT"
 # Includes in <head>
 # ------------------
 # Include CSS files in header of desk.html
-# app_include_css = "/assets/frappe_theme_editor/css/nce_theme.css"
+app_include_css = "/assets/frappe_theme_editor/css/nce_theme.css"
 
 # Include JS files in header of desk.html
-# app_include_js = "/assets/frappe_theme_editor/js/theme_editor.js"
+app_include_js = "/assets/frappe_theme_editor/js/theme_editor.js"
 
 # Include CSS in website pages
 # web_include_css = "/assets/frappe_theme_editor/css/nce_theme.css"
@@ -37,8 +38,9 @@ app_license = "MIT"
 add_to_apps_screen = [
 	{
 		"name": "frappe_theme_editor",
+		"logo": "/assets/frappe_theme_editor/logo.png",
 		"title": "Theme Editor",
-		"route": "/theme-editor",
+		"route": "/app/theme-editor",
 	}
 ]
 
@@ -61,7 +63,14 @@ add_to_apps_screen = [
 
 # Fixtures
 # --------
-# fixtures = []
+fixtures = [
+	{
+		"doctype": "Page",
+		"filters": [
+			["name", "in", ["theme-editor"]]
+		]
+	}
+]
 
 # Boot Info
 # ---------

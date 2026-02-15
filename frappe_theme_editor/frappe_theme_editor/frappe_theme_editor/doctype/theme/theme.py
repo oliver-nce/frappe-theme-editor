@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 import json
+import os
 
 
 class Theme(Document):
@@ -15,13 +16,20 @@ class Theme(Document):
 			except json.JSONDecodeError:
 				frappe.throw("Invalid JSON data")
 
+		# If this theme is being set as default, clear default on all others
+		if self.is_default:
+			frappe.db.sql(
+				"""UPDATE `tabTheme` SET is_default = 0 WHERE name != %s""",
+				self.name
+			)
+
 
 @frappe.whitelist()
 def get_all_themes():
 	"""Get all themes with basic info"""
 	themes = frappe.get_all(
 		"Theme",
-		fields=["name", "theme_name", "description", "modified"],
+		fields=["name", "theme_name", "description", "is_default", "modified"],
 		order_by="modified desc"
 	)
 	
@@ -46,6 +54,42 @@ def get_all_themes():
 			theme["neutral_color"] = "#666666"
 	
 	return themes
+
+
+@frappe.whitelist()
+def get_default_theme():
+	"""Get the default theme (if one is set)"""
+	default = frappe.get_all(
+		"Theme",
+		filters={"is_default": 1},
+		fields=["name", "theme_name", "description", "is_default"],
+		limit=1
+	)
+	if default:
+		theme = frappe.get_doc("Theme", default[0].name)
+		return {
+			"name": theme.name,
+			"theme_name": theme.theme_name,
+			"description": theme.description,
+			"is_default": theme.is_default,
+			"json_data": theme.json_data
+		}
+	return None
+
+
+@frappe.whitelist()
+def set_default_theme(name):
+	"""Set a theme as the default (or clear default if name is empty)"""
+	# Clear all defaults first
+	frappe.db.sql("""UPDATE `tabTheme` SET is_default = 0""")
+	
+	if name:
+		theme = frappe.get_doc("Theme", name)
+		theme.is_default = 1
+		theme.save()
+	
+	frappe.db.commit()
+	return {"success": True}
 
 
 def hsl_to_hex(h, s, l):
@@ -85,6 +129,7 @@ def get_theme(name):
 		"name": theme.name,
 		"theme_name": theme.theme_name,
 		"description": theme.description,
+		"is_default": theme.is_default,
 		"json_data": theme.json_data
 	}
 
@@ -116,4 +161,30 @@ def update_theme(name, description, json_data):
 def delete_theme(name):
 	"""Delete a theme"""
 	frappe.delete_doc("Theme", name)
+	return {"success": True}
+
+
+def _get_css_file_path():
+	"""Get the path to the theme CSS file"""
+	app_path = frappe.get_app_path("frappe_theme_editor")
+	css_dir = os.path.join(app_path, "public", "css")
+	os.makedirs(css_dir, exist_ok=True)
+	return os.path.join(css_dir, "nce_theme.css")
+
+
+@frappe.whitelist()
+def deploy_theme_css(css_content):
+	"""Write theme CSS to the app's public/css folder for app_include_css"""
+	css_path = _get_css_file_path()
+	with open(css_path, "w") as f:
+		f.write(css_content)
+	return {"success": True, "path": css_path}
+
+
+@frappe.whitelist()
+def revert_theme_css():
+	"""Clear the theme CSS file to revert to Frappe defaults"""
+	css_path = _get_css_file_path()
+	with open(css_path, "w") as f:
+		f.write("/* Theme reverted to Frappe defaults */\n")
 	return {"success": True}

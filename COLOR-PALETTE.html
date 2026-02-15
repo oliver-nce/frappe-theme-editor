@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCE Design System - Color Palette Reference</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 40px;
+            background: white;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .header {
+            margin-bottom: 40px;
+            border-bottom: 3px solid #1a1a1a;
+            padding-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .color-swatch {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-box {
+            height: 80px;
+            width: 100%;
+        }
+        
+        .color-info {
+            padding: 12px;
+            background: white;
+        }
+        
+        .color-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1a1a1a;
+        }
+        
+        .color-value {
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        
+        .hue-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .hue-example {
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .hue-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+        
+        .hue-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .hue-value {
+            font-size: 10px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .note {
+            background: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #4a90e2;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>NCE Design System</h1>
+        <p class="subtitle">Color Palette Reference • Default Configuration (Hue: 210 - Blue)</p>
+    </div>
+    
+    <!-- Primary Colors -->
+    <div class="section">
+        <h2 class="section-title">Primary Colors (Blue Scale)</h2>
+        <div class="color-grid">
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 100%, 97%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-50</div>
+                    <div class="color-value">#f0f7ff</div>
+                    <div class="color-value">hsl(210, 100%, 97%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 95%, 92%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-100</div>
+                    <div class="color-value">#deedfe</div>
+                    <div class="color-value">hsl(210, 95%, 92%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 90%, 85%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-200</div>
+                    <div class="color-value">#b8dcfd</div>
+                    <div class="color-value">hsl(210, 90%, 85%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 85%, 75%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-300</div>
+                    <div class="color-value">#87c3fb</div>
+                    <div class="color-value">hsl(210, 85%, 75%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 80%, 65%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-400</div>
+                    <div class="color-value">#54abf9</div>
+                    <div class="color-value">hsl(210, 80%, 65%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 75%, 55%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-500</div>
+                    <div class="color-value">#2693f6</div>
+                    <div class="color-value">hsl(210, 75%, 55%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 70%, 45%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-600</div>
+                    <div class="color-value">#2277c9</div>
+                    <div class="color-value">hsl(210, 70%, 45%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 65%, 35%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-700</div>
+                    <div class="color-value">#1f5a94</div>
+                    <div class="color-value">hsl(210, 65%, 35%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 60%, 25%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-800</div>
+                    <div class="color-value" style="color: white;">#19405f</div>
+                    <div class="color-value" style="color: white;">hsl(210, 60%, 25%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 55%, 15%);"></div>
+                <div class="color-info">
+                    <div class="color-name">primary-900</div>
+                    <div class="color-value" style="color: white;">#112638</div>
+                    <div class="color-value" style="color: white;">hsl(210, 55%, 15%)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Neutral Colors -->
+    <div class="section">
+        <h2 class="section-title">Neutral Colors (Cool Gray Scale)</h2>
+        <div class="color-grid">
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 5%, 98%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-50</div>
+                    <div class="color-value">#fafbfc</div>
+                    <div class="color-value">hsl(210, 5%, 98%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 5%, 95%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-100</div>
+                    <div class="color-value">#f1f2f4</div>
+                    <div class="color-value">hsl(210, 5%, 95%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 5%, 90%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-200</div>
+                    <div class="color-value">#e3e5e8</div>
+                    <div class="color-value">hsl(210, 5%, 90%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 5%, 80%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-300</div>
+                    <div class="color-value">#c7cbd1</div>
+                    <div class="color-value">hsl(210, 5%, 80%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 5%, 60%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-400</div>
+                    <div class="color-value">#9097a3</div>
+                    <div class="color-value">hsl(210, 5%, 60%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 5%, 50%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-500</div>
+                    <div class="color-value">#7c8289</div>
+                    <div class="color-value">hsl(210, 5%, 50%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 8%, 40%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-600</div>
+                    <div class="color-value">#5e6570</div>
+                    <div class="color-value">hsl(210, 8%, 40%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 8%, 30%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-700</div>
+                    <div class="color-value" style="color: white;">#464c54</div>
+                    <div class="color-value" style="color: white;">hsl(210, 8%, 30%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 10%, 20%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-800</div>
+                    <div class="color-value" style="color: white;">#2e3238</div>
+                    <div class="color-value" style="color: white;">hsl(210, 10%, 20%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(210, 10%, 10%);"></div>
+                <div class="color-info">
+                    <div class="color-name">neutral-900</div>
+                    <div class="color-value" style="color: white;">#17191c</div>
+                    <div class="color-value" style="color: white;">hsl(210, 10%, 10%)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Semantic Colors -->
+    <div class="section">
+        <h2 class="section-title">Semantic Colors</h2>
+        <div class="color-grid">
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(150, 75%, 85%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Success</div>
+                    <div class="color-value">#b3f0d9</div>
+                    <div class="color-value">hsl(150, 75%, 85%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(150, 60%, 60%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Success Border</div>
+                    <div class="color-value">#66d9a6</div>
+                    <div class="color-value">hsl(150, 60%, 60%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(150, 80%, 20%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Success Text</div>
+                    <div class="color-value" style="color: white;">#0a5c39</div>
+                    <div class="color-value" style="color: white;">hsl(150, 80%, 20%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(0, 85%, 90%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Error</div>
+                    <div class="color-value">#fccfcf</div>
+                    <div class="color-value">hsl(0, 85%, 90%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(0, 70%, 70%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Error Border</div>
+                    <div class="color-value">#f29999</div>
+                    <div class="color-value">hsl(0, 70%, 70%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(0, 80%, 30%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Error Text</div>
+                    <div class="color-value" style="color: white;">#8a0f0f</div>
+                    <div class="color-value" style="color: white;">hsl(0, 80%, 30%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(45, 90%, 85%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Running/Warning</div>
+                    <div class="color-value">#faedc6</div>
+                    <div class="color-value">hsl(45, 90%, 85%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(45, 80%, 60%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Running Border</div>
+                    <div class="color-value">#efd166</div>
+                    <div class="color-value">hsl(45, 80%, 60%)</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: hsl(45, 80%, 20%);"></div>
+                <div class="color-info">
+                    <div class="color-name">Running Text</div>
+                    <div class="color-value" style="color: white;">#5c4a0a</div>
+                    <div class="color-value" style="color: white;">hsl(45, 80%, 20%)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- macOS Window Controls -->
+    <div class="section">
+        <h2 class="section-title">macOS Window Controls</h2>
+        <div class="color-grid">
+            <div class="color-swatch">
+                <div class="color-box" style="background: #ff5f57;"></div>
+                <div class="color-info">
+                    <div class="color-name">Close</div>
+                    <div class="color-value">#ff5f57</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: #f5c000;"></div>
+                <div class="color-info">
+                    <div class="color-name">Minimize</div>
+                    <div class="color-value">#f5c000</div>
+                </div>
+            </div>
+            
+            <div class="color-swatch">
+                <div class="color-box" style="background: #10b981;"></div>
+                <div class="color-info">
+                    <div class="color-name">Maximize</div>
+                    <div class="color-value">#10b981</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hue Examples -->
+    <div class="section">
+        <h2 class="section-title">Available Hue Presets</h2>
+        <p style="font-size: 13px; color: #666; margin-bottom: 16px;">
+            Change <code>--core-hue</code> to any of these values to instantly restyle the entire dashboard:
+        </p>
+        <div class="hue-examples">
+            <div class="hue-example">
+                <div class="hue-circle" style="background: hsl(210, 75%, 55%);"></div>
+                <div class="hue-label">Blue</div>
+                <div class="hue-value">210 (default)</div>
+            </div>
+            
+            <div class="hue-example">
+                <div class="hue-circle" style="background: hsl(200, 75%, 55%);"></div>
+                <div class="hue-label">Cyan</div>
+                <div class="hue-value">200</div>
+            </div>
+            
+            <div class="hue-example">
+                <div class="hue-circle" style="background: hsl(180, 75%, 55%);"></div>
+                <div class="hue-label">Teal</div>
+                <div class="hue-value">180</div>
+            </div>
+            
+            <div class="hue-example">
+                <div class="hue-circle" style="background: hsl(150, 75%, 55%);"></div>
+                <div class="hue-label">Green</div>
+                <div class="hue-value">150</div>
+            </div>
+            
+            <div class="hue-example">
+                <div class="hue-circle" style="background: hsl(30, 75%, 55%);"></div>
+                <div class="hue-label">Orange</div>
+                <div class="hue-value">30</div>
+            </div>
+            
+            <div class="hue-example">
+                <div class="hue-circle" style="background: hsl(0, 75%, 55%);"></div>
+                <div class="hue-label">Red</div>
+                <div class="hue-value">0</div>
+            </div>
+            
+            <div class="hue-example">
+                <div class="hue-circle" style="background: hsl(270, 75%, 55%);"></div>
+                <div class="hue-label">Purple</div>
+                <div class="hue-value">270</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usage Note -->
+    <div class="note">
+        <strong>Usage:</strong> All colors are defined using CSS custom properties (variables) in <code>:root</code>. 
+        Change <code>--core-hue</code> from 210 to any value (0-360) to instantly theme the entire design system. 
+        Neutral colors can be independently themed using <code>--dashboard-neutral-hue</code>.
+    </div>
+    
+    <script>
+        // Add print button for convenience
+        window.addEventListener('DOMContentLoaded', () => {
+            const printBtn = document.createElement('button');
+            printBtn.textContent = '🖨️ Print to PDF';
+            printBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 24px;
+                background: #4a90e2;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 1000;
+            `;
+            printBtn.onclick = () => window.print();
+            document.body.appendChild(printBtn);
+        });
+    </script>
+</body>
+</html>

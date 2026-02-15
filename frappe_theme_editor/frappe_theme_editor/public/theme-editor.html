@@ -2493,8 +2493,8 @@
             <div class="header-buttons">
                 <button class="btn btn-outline" data-action="my-themes">My Themes</button>
                 <button class="btn btn-outline" data-action="frappe-desk">Frappe Desk</button>
-                <button class="btn btn-outline" data-action="revert" id="btnRevert" style="display: none;">Revert</button>
-                <button class="btn btn-outline" data-action="update-theme" id="btnUpdate" style="display: none;">Update</button>
+                <button class="btn btn-outline" data-action="revert" id="btnRevert">Revert</button>
+                <button class="btn btn-outline" data-action="update-theme" id="btnUpdate">Update</button>
                 <button class="btn btn-solid" data-action="save-as-new">Save as New Theme</button>
             </div>
         </div>
@@ -2505,6 +2505,7 @@
         <div class="tab-nav">
             <button class="tab-btn active" data-action="switch-tab" data-target="core">Core Theme</button>
             <button class="tab-btn" data-action="switch-tab" data-target="frappe">Frappe Settings</button>
+            <button class="tab-btn" data-action="switch-tab" data-target="deployment">Deployment</button>
         </div>
         <!-- ═══════════════════════════════════════════════════════════════════════════
              FRAPPE ONLY: HTML END - Tab Navigation
@@ -3862,6 +3863,27 @@
         <!-- ═══════════════════════════════════════════════════════════════════════════
              FRAPPE ONLY: HTML END - Tab 2 (Frappe Settings)
              ═══════════════════════════════════════════════════════════════════════════ -->
+
+        <!-- Tab 3: Deployment -->
+        <div id="tab-deployment" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Deployment</h2>
+                </div>
+                <p class="setting-desc" style="margin-top: 12px;">Apply this theme's CSS variables to the Frappe desk via <code>app_include_css</code>. This affects all desk pages across all apps on this site.</p>
+                
+                <div style="display: flex; gap: 16px; margin-top: 24px;">
+                    <button class="btn btn-solid" data-action="deploy-theme" style="padding: 12px 24px; font-size: 15px;">
+                        Apply this Theme to this Site
+                    </button>
+                    <button class="btn btn-outline" data-action="revert-deploy" style="padding: 12px 24px; font-size: 15px; border-color: #dc2626; color: #dc2626;">
+                        Revert to the Default Theme
+                    </button>
+                </div>
+                
+                <div id="deploy-status" style="margin-top: 20px;"></div>
+            </div>
+        </div><!-- End Tab 3: Deployment -->
         
     </div>
     </div>
@@ -4062,7 +4084,7 @@
                 showMyThemesModal();
                 break;
             case 'frappe-desk':
-                window.open('/app/frappe-theme-editor', '_blank');
+                window.open('/app/home_page', '_blank');
                 break;
             case 'save-as-new':
                 showSaveAsNewModal();
@@ -4082,6 +4104,9 @@
             case 'delete-theme':
                 confirmDeleteTheme(target.dataset.name);
                 break;
+            case 'set-default':
+                setDefaultTheme(target.checked ? target.dataset.name : '');
+                break;
             case 'show-json':
                 showThemeJSON(target.dataset.name);
                 break;
@@ -4089,6 +4114,12 @@
             // Copy CSS
             case 'copy-css':
                 copyCSS();
+                break;
+            case 'deploy-theme':
+                deployThemeToSite();
+                break;
+            case 'revert-deploy':
+                revertDeployedTheme();
                 break;
                 
             default:
@@ -4116,6 +4147,8 @@
         // Initialize color grids and UI
         buildColorGrid();
         updateUI();
+        if (typeof initFrappeSwatches === 'function') initFrappeSwatches();
+        updateThemeButtons();
         
         // Initialize draggable modal
         initDraggableEditor();
@@ -4169,7 +4202,7 @@
     
     function updateFrappeState(key, value) {
         frappeState[key] = value;
-        console.log('Frappe state updated:', key, '=', value);
+        updateThemeButtons();
     }
     // ═══════════════════════════════════════════════════════════════════════════
     // FRAPPE ONLY: JS END - Tab/Subtab Switching
@@ -4325,7 +4358,7 @@
         // Close dropdown
         dropdown.classList.remove('open');
         
-        console.log('B&W state updated:', stateKey, '=', hex);
+        updateThemeButtons();
     }
     
     function initGrayPickers() {
@@ -4596,7 +4629,7 @@
         // Update inherited swatches that may depend on this value
         updateInheritedSwatches();
         
-        console.log('State updated:', stateKey, '=', value);
+        updateThemeButtons();
     }
     
     // Update all inherited swatches when parent values change
@@ -4738,7 +4771,7 @@
         // Update inherited swatches that depend on this
         updateInheritedSwatches();
         
-        console.log('Navbar theme:', value);
+        updateThemeButtons();
     }
     
     function initNavbarPicker() {
@@ -4762,7 +4795,7 @@
     // Color Input Functions
     function updateColorInput(key, hexValue) {
         frappeState[key] = hexValue;
-        console.log('Color updated:', key, '=', hexValue);
+        updateThemeButtons();
     }
     
     function initColorInputs() {
@@ -4805,7 +4838,7 @@
         // Update inherited swatches
         updateInheritedSwatches();
         
-        console.log('Frappe state updated:', stateKey, '=', value);
+        updateThemeButtons();
     }
     
     // Close dropdowns when clicking outside
@@ -5481,6 +5514,7 @@
     
     let currentTheme = null; // Track currently loaded theme
     let originalState = null; // Track original state for revert
+    let originalFrappeState = null; // Track original Frappe state for revert
     
     // Helper to access frappe from iframe context
     function getFrappe() {
@@ -5547,6 +5581,7 @@
                             <th>Colors</th>
                             <th>Name</th>
                             <th>Description</th>
+                            <th>Default</th>
                             <th colspan="3">Actions</th>
                         </tr>
                     </thead>
@@ -5585,6 +5620,9 @@
                         </td>
                         <td><strong>${theme.theme_name}</strong></td>
                         <td>${theme.description || ''}</td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" ${theme.is_default ? 'checked' : ''} data-action="set-default" data-name="${theme.name}" style="width: 18px; height: 18px; cursor: pointer;">
+                        </td>
                         <td>
                             <button class="btn btn-sm btn-load" style="background: ${loadBtnBg}; color: ${loadBtnText};" data-action="load-theme" data-name="${theme.name}">
                                 Load ${theme.theme_name}
@@ -5621,6 +5659,103 @@
         modal.classList.add('modal-wide');
         
         document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    async function setDefaultTheme(name) {
+        const frappe = await waitForFrappe();
+        if (!frappe) return;
+        
+        try {
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.set_default_theme',
+                args: { name: name },
+                callback: function(r) {
+                    if (r.message && r.message.success) {
+                        // Uncheck all other checkboxes in the table
+                        document.querySelectorAll('[data-action="set-default"]').forEach(cb => {
+                            cb.checked = (cb.dataset.name === name);
+                        });
+                        showNotification(name ? `Default theme set` : 'Default theme cleared');
+                    }
+                }
+            });
+        } catch (error) {
+            showNotification('Failed to set default: ' + error.message);
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DEPLOYMENT - Apply/Revert theme CSS to live site
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    async function deployThemeToSite() {
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available.');
+            return;
+        }
+        
+        // Generate the CSS from current state
+        const themeJSON = JSON.parse(exportThemeJSON());
+        const cssContent = themeJSON.frappeStylesheet;
+        
+        if (!cssContent) {
+            showErrorModal('No CSS stylesheet generated. Please save your theme first.');
+            return;
+        }
+        
+        const statusDiv = document.getElementById('deploy-status');
+        statusDiv.innerHTML = '<p style="color: #666;">Deploying theme...</p>';
+        
+        try {
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.deploy_theme_css',
+                args: { css_content: cssContent },
+                callback: function(r) {
+                    if (r.message && r.message.success) {
+                        statusDiv.innerHTML = `
+                            <p style="color: #16a34a; font-weight: 600;">Theme applied successfully.</p>
+                            <p class="setting-desc">CSS written to <code>public/css/nce_theme.css</code>. Run <code>bench clear-cache</code> and reload to see changes across the site.</p>
+                        `;
+                        showNotification('Theme deployed to site');
+                    } else {
+                        statusDiv.innerHTML = '<p style="color: #dc2626;">Deployment failed. Check console for details.</p>';
+                    }
+                }
+            });
+        } catch (error) {
+            statusDiv.innerHTML = `<p style="color: #dc2626;">Error: ${error.message}</p>`;
+        }
+    }
+    
+    async function revertDeployedTheme() {
+        const frappe = getFrappe();
+        if (!frappe) {
+            showErrorModal('Frappe API not available.');
+            return;
+        }
+        
+        const statusDiv = document.getElementById('deploy-status');
+        statusDiv.innerHTML = '<p style="color: #666;">Reverting theme...</p>';
+        
+        try {
+            await frappe.call({
+                method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.revert_theme_css',
+                callback: function(r) {
+                    if (r.message && r.message.success) {
+                        statusDiv.innerHTML = `
+                            <p style="color: #16a34a; font-weight: 600;">Theme reverted to Frappe defaults.</p>
+                            <p class="setting-desc">CSS file cleared. Run <code>bench clear-cache</code> and reload to see the default theme.</p>
+                        `;
+                        showNotification('Theme reverted to defaults');
+                    } else {
+                        statusDiv.innerHTML = '<p style="color: #dc2626;">Revert failed. Check console for details.</p>';
+                    }
+                }
+            });
+        } catch (error) {
+            statusDiv.innerHTML = `<p style="color: #dc2626;">Error: ${error.message}</p>`;
+        }
     }
     
     // Show "Save as New Theme" dialog
@@ -5669,7 +5804,8 @@
                     callback: function(r) {
                         if (r.message) {
                             currentTheme = { name: r.message, theme_name: name };
-                            originalState = JSON.parse(jsonData);
+                            originalState = JSON.parse(JSON.stringify(state));
+                            originalFrappeState = JSON.parse(JSON.stringify(frappeState));
                             updateThemeButtons();
                             showNotification('Theme saved successfully!');
                             closeModal();
@@ -5707,7 +5843,8 @@
                 },
                 callback: function(r) {
                     if (r.message) {
-                        originalState = JSON.parse(jsonData);
+                        originalState = JSON.parse(JSON.stringify(state));
+                        originalFrappeState = JSON.parse(JSON.stringify(frappeState));
                         updateThemeButtons();
                         showNotification('Theme updated successfully!');
                         
@@ -5736,9 +5873,13 @@
             return;
         }
         
-        // Restore state from original
+        // Restore core state and Frappe state from originals
         state = JSON.parse(JSON.stringify(originalState));
+        if (originalFrappeState) {
+            Object.assign(frappeState, JSON.parse(JSON.stringify(originalFrappeState)));
+        }
         updateUI();
+        if (typeof initFrappeSwatches === 'function') initFrappeSwatches();
         updateThemeButtons();
         showNotification('Reverted to original theme');
     }
@@ -5761,13 +5902,19 @@
                         // Load from _state if available (new format), otherwise use root (old format)
                         const stateData = themeData._state || themeData;
                         state = { ...DEFAULT_STATE, ...stateData };
+                        // Load Frappe state if available
+                        if (themeData._frappeState) {
+                            Object.assign(frappeState, { ...DEFAULT_FRAPPE_STATE, ...themeData._frappeState });
+                        }
                         currentTheme = {
                             name: r.message.name,
                             theme_name: r.message.theme_name,
                             description: r.message.description
                         };
                         originalState = JSON.parse(JSON.stringify(state));
+                        originalFrappeState = JSON.parse(JSON.stringify(frappeState));
                         updateUI();
+                        if (typeof initFrappeSwatches === 'function') initFrappeSwatches();
                         updateThemeButtons();
                         closeModal();
                         showNotification(`Loaded theme: ${currentTheme.theme_name}`);
@@ -5846,6 +5993,7 @@
                         if (currentTheme && currentTheme.name === themeName) {
                             currentTheme = null;
                             originalState = null;
+                            originalFrappeState = null;
                             updateThemeButtons();
                         }
                         // Refresh themes list
@@ -5901,37 +6049,48 @@
     function updateThemeButtons() {
         const btnUpdate = document.getElementById('btnUpdate');
         const btnRevert = document.getElementById('btnRevert');
+        if (!btnUpdate || !btnRevert) return; // Guard for early init
         
         // Show Update/Revert only if:
         // 1. A theme is loaded
         // 2. It's not the default theme
-        // 3. Changes have been made
-        const hasChanges = originalState && JSON.stringify(state) !== JSON.stringify(originalState);
+        // 3. Changes have been made (core state OR Frappe state)
+        const coreChanged = originalState && JSON.stringify(state) !== JSON.stringify(originalState);
+        const frappeChanged = originalFrappeState && JSON.stringify(frappeState) !== JSON.stringify(originalFrappeState);
+        const hasChanges = coreChanged || frappeChanged;
         const isCustomTheme = currentTheme && currentTheme.name !== 'Default';
         
-        if (isCustomTheme && hasChanges) {
-            btnUpdate.style.display = 'inline-block';
-            btnRevert.style.display = 'inline-block';
-        } else {
-            btnUpdate.style.display = 'none';
-            btnRevert.style.display = 'none';
-        }
+        // Always visible for now (TODO: restore conditional logic later)
+        btnUpdate.style.display = 'inline-block';
+        btnRevert.style.display = 'inline-block';
     }
     
-    // Export current state as JSON string (full W3C Design Token format)
+    // Export current state as JSON string (unified format for DB save)
     function exportThemeJSON() {
         const themeName = currentTheme ? currentTheme.theme_name : 'NCE Theme';
         
-        // W3C Design Tokens Format (2025.10)
-        // https://www.w3.org/community/design-tokens/
+        // Helper to resolve token name to hex value
+        const resolveColor = (token) => {
+            if (!token) return null;
+            if (token.startsWith('#')) return token;
+            return getTokenColor(token);
+        };
+        
+        const getNavbarBg = () => {
+            if (frappeState.navbarTheme === 'dark') return '#1a1a1a';
+            if (frappeState.navbarTheme === 'light') return '#ffffff';
+            return getTokenColor('primary-700');
+        };
+        
         const theme = {
             "$name": themeName,
             "$description": "NCE Design System theme for business web applications and Frappe applications. Hue-based color system with AI agent guidance.",
             "$version": "1.0.0",
             "$created": new Date().toISOString(),
             
-            // Store the raw state for easy loading
+            // Raw editor state for round-trip loading
             "_state": state,
+            "_frappeState": { ...frappeState },
             
             // ═══════════════════════════════════════════════════════════════
             // $extensions - Custom metadata including AI agent guidance
@@ -6093,8 +6252,188 @@
                     "$type": "number",
                     "$value": state.outlineShade
                 }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════
+            // FRAPPE CSS VARIABLES - resolved hex values for all 52 properties
+            // ═══════════════════════════════════════════════════════════════
+            "frappeCSS": {
+                "$description": "Frappe CSS custom properties - use these variable names exactly",
+                "$usage": "Python script reads these directly into app CSS",
+                
+                // Core
+                "--primary": resolveColor('primary-500'),
+                "--primary-light": resolveColor('primary-100'),
+                "--primary-dark": resolveColor('primary-700'),
+                "--bg-color": resolveColor(state.pageBg),
+                "--fg-color": resolveColor(state.panelBg),
+                
+                // Semantic
+                "--green": hslToHex(state.success.h, state.success.s, 50),
+                "--green-light": hslToHex(state.success.h, state.success.s, state.success.l),
+                "--red": hslToHex(state.error.h, state.error.s, 50),
+                "--red-light": hslToHex(state.error.h, state.error.s, state.error.l),
+                "--orange": hslToHex(state.warning.h, state.warning.s, 50),
+                "--orange-light": hslToHex(state.warning.h, state.warning.s, state.warning.l),
+                
+                // Sizing
+                "--border-radius": frappeState.borderRadius,
+                "--border-radius-lg": frappeState.borderRadiusLg,
+                "--btn-height": frappeState.btnHeight,
+                "--card-border-radius": frappeState.cardBorderRadius,
+                
+                // Common Elements
+                "--navbar-bg": getNavbarBg(),
+                "--control-bg": resolveColor(frappeState.controlBg),
+                "--btn-default-bg": resolveColor(frappeState.btnDefaultBg),
+                "--focus-ring-color": resolveColor(frappeState.focusRingColor),
+                "--border-color": resolveColor(frappeState.defaultBorderColor),
+                "--row-hover-bg": resolveColor(frappeState.rowHoverColor),
+                "--row-selection-bg": resolveColor(frappeState.rowSelectionColor),
+                "--alternate-row-bg": resolveColor(frappeState.alternateRowColor),
+                
+                // Lists
+                "--list-header-bg": resolveColor(frappeState.listHeaderBg),
+                "--list-header-text": resolveColor(frappeState.listHeaderText),
+                "--list-row-border": resolveColor(frappeState.listRowBorder),
+                "--list-row-hover": resolveColor(frappeState.rowHoverColor),
+                "--list-row-selected": resolveColor(frappeState.rowSelectionColor),
+                "--list-row-alt": resolveColor(frappeState.alternateRowColor),
+                
+                // Forms
+                "--form-label-color": resolveColor(frappeState.formLabelColor),
+                "--form-section-bg": resolveColor(frappeState.formSectionBg),
+                "--form-section-text": resolveColor(frappeState.formSectionText),
+                "--form-tab-active": resolveColor(frappeState.formTabActive),
+                "--checkbox-color": resolveColor(frappeState.checkboxColor),
+                "--form-control-bg": resolveColor(frappeState.controlBg),
+                "--form-focus-ring": resolveColor(frappeState.focusRingColor),
+                "--form-border-color": resolveColor(frappeState.defaultBorderColor),
+                
+                // Indicators
+                "--indicator-blue": resolveColor(frappeState.indicatorBlue),
+                "--indicator-purple": frappeState.indicatorPurple,
+                "--indicator-gray": resolveColor(frappeState.indicatorGray),
+                "--indicator-green": hslToHex(state.success.h, state.success.s, 50),
+                "--indicator-red": hslToHex(state.error.h, state.error.s, 50),
+                "--indicator-orange": hslToHex(state.warning.h, state.warning.s, 50),
+                
+                // Navigation
+                "--sidebar-bg": resolveColor(frappeState.sidebarBg),
+                "--sidebar-text": resolveColor(frappeState.sidebarText),
+                "--sidebar-hover": resolveColor(frappeState.sidebarHover),
+                "--sidebar-active-bg": resolveColor(frappeState.sidebarActive),
+                "--sidebar-active-text": resolveColor(frappeState.sidebarActiveText),
+                "--awesomebar-hover": resolveColor(frappeState.awesomebarHover),
+                
+                // Print - Color
+                "--print-heading": resolveColor(frappeState.printHeading),
+                "--print-text": resolveColor(frappeState.printText),
+                "--print-table-header": resolveColor(frappeState.printTableHeader),
+                "--print-table-border": resolveColor(frappeState.printTableBorder),
+                "--print-footer": resolveColor(frappeState.printFooter),
+                
+                // Print - B&W
+                "--print-heading-bw": frappeState.printHeadingBW,
+                "--print-text-bw": frappeState.printTextBW,
+                "--print-table-header-bw": frappeState.printTableHeaderBW,
+                "--print-table-border-bw": frappeState.printTableBorderBW,
+                "--print-footer-bw": frappeState.printFooterBW
             }
         };
+
+            // ═══════════════════════════════════════════════════════════════
+            // FRAPPE STYLESHEET - ready-to-deploy CSS for app_include_css
+            // ═══════════════════════════════════════════════════════════════
+            const css = theme.frappeCSS;
+            const lines = [];
+            lines.push('/* NCE Theme - Generated by Frappe Theme Editor */');
+            lines.push(`/* Theme: ${themeName} */`);
+            lines.push(`/* Generated: ${new Date().toISOString()} */`);
+            lines.push('/* To revert: delete contents of this file and run bench clear-cache */');
+            lines.push('');
+            lines.push(':root {');
+            lines.push('  /* Core */');
+            lines.push(`  --primary: ${css['--primary']};`);
+            lines.push(`  --primary-light: ${css['--primary-light']};`);
+            lines.push(`  --primary-dark: ${css['--primary-dark']};`);
+            lines.push(`  --bg-color: ${css['--bg-color']};`);
+            lines.push(`  --fg-color: ${css['--fg-color']};`);
+            lines.push('');
+            lines.push('  /* Semantic */');
+            lines.push(`  --green: ${css['--green']};`);
+            lines.push(`  --green-light: ${css['--green-light']};`);
+            lines.push(`  --red: ${css['--red']};`);
+            lines.push(`  --red-light: ${css['--red-light']};`);
+            lines.push(`  --orange: ${css['--orange']};`);
+            lines.push(`  --orange-light: ${css['--orange-light']};`);
+            lines.push('');
+            lines.push('  /* Sizing */');
+            lines.push(`  --border-radius: ${css['--border-radius']};`);
+            lines.push(`  --border-radius-lg: ${css['--border-radius-lg']};`);
+            lines.push(`  --btn-height: ${css['--btn-height']};`);
+            lines.push(`  --card-border-radius: ${css['--card-border-radius']};`);
+            lines.push('');
+            lines.push('  /* Common Elements */');
+            lines.push(`  --navbar-bg: ${css['--navbar-bg']};`);
+            lines.push(`  --control-bg: ${css['--control-bg']};`);
+            lines.push(`  --btn-default-bg: ${css['--btn-default-bg']};`);
+            lines.push(`  --focus-ring-color: ${css['--focus-ring-color']};`);
+            lines.push(`  --border-color: ${css['--border-color']};`);
+            lines.push(`  --row-hover-bg: ${css['--row-hover-bg']};`);
+            lines.push(`  --row-selection-bg: ${css['--row-selection-bg']};`);
+            lines.push(`  --alternate-row-bg: ${css['--alternate-row-bg']};`);
+            lines.push('');
+            lines.push('  /* Lists */');
+            lines.push(`  --list-header-bg: ${css['--list-header-bg']};`);
+            lines.push(`  --list-header-text: ${css['--list-header-text']};`);
+            lines.push(`  --list-row-border: ${css['--list-row-border']};`);
+            lines.push(`  --list-row-hover: ${css['--list-row-hover']};`);
+            lines.push(`  --list-row-selected: ${css['--list-row-selected']};`);
+            lines.push(`  --list-row-alt: ${css['--list-row-alt']};`);
+            lines.push('');
+            lines.push('  /* Forms */');
+            lines.push(`  --form-label-color: ${css['--form-label-color']};`);
+            lines.push(`  --form-section-bg: ${css['--form-section-bg']};`);
+            lines.push(`  --form-section-text: ${css['--form-section-text']};`);
+            lines.push(`  --form-tab-active: ${css['--form-tab-active']};`);
+            lines.push(`  --checkbox-color: ${css['--checkbox-color']};`);
+            lines.push(`  --form-control-bg: ${css['--form-control-bg']};`);
+            lines.push(`  --form-focus-ring: ${css['--form-focus-ring']};`);
+            lines.push(`  --form-border-color: ${css['--form-border-color']};`);
+            lines.push('');
+            lines.push('  /* Indicators */');
+            lines.push(`  --indicator-blue: ${css['--indicator-blue']};`);
+            lines.push(`  --indicator-purple: ${css['--indicator-purple']};`);
+            lines.push(`  --indicator-gray: ${css['--indicator-gray']};`);
+            lines.push(`  --indicator-green: ${css['--indicator-green']};`);
+            lines.push(`  --indicator-red: ${css['--indicator-red']};`);
+            lines.push(`  --indicator-orange: ${css['--indicator-orange']};`);
+            lines.push('');
+            lines.push('  /* Navigation */');
+            lines.push(`  --sidebar-bg: ${css['--sidebar-bg']};`);
+            lines.push(`  --sidebar-text: ${css['--sidebar-text']};`);
+            lines.push(`  --sidebar-hover: ${css['--sidebar-hover']};`);
+            lines.push(`  --sidebar-active-bg: ${css['--sidebar-active-bg']};`);
+            lines.push(`  --sidebar-active-text: ${css['--sidebar-active-text']};`);
+            lines.push(`  --awesomebar-hover: ${css['--awesomebar-hover']};`);
+            lines.push('');
+            lines.push('  /* Print - Color */');
+            lines.push(`  --print-heading: ${css['--print-heading']};`);
+            lines.push(`  --print-text: ${css['--print-text']};`);
+            lines.push(`  --print-table-header: ${css['--print-table-header']};`);
+            lines.push(`  --print-table-border: ${css['--print-table-border']};`);
+            lines.push(`  --print-footer: ${css['--print-footer']};`);
+            lines.push('');
+            lines.push('  /* Print - B&W */');
+            lines.push(`  --print-heading-bw: ${css['--print-heading-bw']};`);
+            lines.push(`  --print-text-bw: ${css['--print-text-bw']};`);
+            lines.push(`  --print-table-header-bw: ${css['--print-table-header-bw']};`);
+            lines.push(`  --print-table-border-bw: ${css['--print-table-border-bw']};`);
+            lines.push(`  --print-footer-bw: ${css['--print-footer-bw']};`);
+            lines.push('}');
+
+            theme.frappeStylesheet = lines.join('\n');
         
         return JSON.stringify(theme, null, 2);
     }
@@ -6253,7 +6592,13 @@
         printFooterBW: '#888888'        // Gray 500
     };
     
-    let frappeState = { ...DEFAULT_FRAPPE_STATE };
+    let frappeState = new Proxy({ ...DEFAULT_FRAPPE_STATE }, {
+        set(target, key, value) {
+            target[key] = value;
+            updateThemeButtons();
+            return true;
+        }
+    });
     // ═══════════════════════════════════════════════════════════════════════════
     // FRAPPE ONLY: JS END - Frappe State
     // ═══════════════════════════════════════════════════════════════════════════
@@ -7216,6 +7561,36 @@
     // ═══════════════════════════════════════════════════════════════════════════
     
     async function loadDefaultTheme() {
+        // Try Frappe API first (loads theme marked as default in DB)
+        const frappeApi = getFrappe();
+        if (frappeApi) {
+            try {
+                const r = await frappeApi.call({
+                    method: 'frappe_theme_editor.frappe_theme_editor.doctype.theme.theme.get_default_theme',
+                });
+                if (r && r.message) {
+                    const themeData = JSON.parse(r.message.json_data);
+                    const stateData = themeData._state || themeData;
+                    state = { ...DEFAULT_STATE, ...stateData };
+                    if (themeData._frappeState) {
+                        Object.assign(frappeState, { ...DEFAULT_FRAPPE_STATE, ...themeData._frappeState });
+                    }
+                    currentTheme = {
+                        name: r.message.name,
+                        theme_name: r.message.theme_name,
+                        description: r.message.description
+                    };
+                    originalState = JSON.parse(JSON.stringify(state));
+                    originalFrappeState = JSON.parse(JSON.stringify(frappeState));
+                    console.log('✅ Default theme loaded from DB:', currentTheme.theme_name);
+                    return true;
+                }
+            } catch (err) {
+                console.log('Frappe API default theme check failed, trying static file fallback');
+            }
+        }
+        
+        // Fallback: try static file (for standalone mode)
         try {
             const response = await fetch('dist/default-theme.json');
             if (!response.ok) {
