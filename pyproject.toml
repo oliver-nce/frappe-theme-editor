@@ -1,5 +1,5 @@
 [project]
-name = "frappe-theme-editor"
+name = "frappe_theme_editor"
 authors = [
     { name = "NCE", email = "dev@ncesoccer.com" }
 ]
