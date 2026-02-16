@@ -40,7 +40,7 @@ add_to_apps_screen = [
 		"name": "frappe_theme_editor",
 		"logo": "/assets/frappe_theme_editor/logo.png",
 		"title": "Theme Editor",
-		"route": "/app/theme-editor",
+		"route": "/app/themes",
 	}
 ]
 
