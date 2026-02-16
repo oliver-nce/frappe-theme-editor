@@ -75,3 +75,7 @@ fixtures = [
 # Boot Info
 # ---------
 # extend_bootinfo = "frappe_theme_editor.api.extend_bootinfo"
+
+# After Install (sync desktop icons so Theme Editor appears in sidebar)
+# -------------------------------------------------------------------
+after_install = "frappe_theme_editor.install.after_install"
