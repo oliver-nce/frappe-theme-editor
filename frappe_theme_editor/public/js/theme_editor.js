@@ -1,5 +1,3 @@
-frappe.msgprint("HELLO from Theme Editor JS");
-
 $(document).on('page-change', function() {
 	var route = frappe.get_route_str();
 	if (route === 'Workspaces/Themes' || route === 'Workspaces/Theme Editor') {
