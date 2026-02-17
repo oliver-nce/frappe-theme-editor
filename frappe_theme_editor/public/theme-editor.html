@@ -1314,6 +1314,75 @@
             width: 100%;
             aspect-ratio: 1;
         }
+        /* Hex input + Eyedropper row */
+        .neutral-hex-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 10px 0 4px;
+        }
+        .neutral-hex-input-wrapper {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            background: #f8f8f8;
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 6px;
+            padding: 0 8px;
+            height: 34px;
+            transition: border-color 0.15s;
+        }
+        .neutral-hex-input-wrapper:focus-within {
+            border-color: var(--primary, #2490EF);
+            box-shadow: 0 0 0 2px rgba(36,144,239,0.15);
+        }
+        .hex-prefix {
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            color: #999;
+            margin-right: 2px;
+            user-select: none;
+        }
+        .neutral-hex-input {
+            border: none;
+            background: transparent;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            color: #333;
+            width: 100%;
+            outline: none;
+            padding: 0;
+            text-transform: uppercase;
+        }
+        .neutral-hex-input::placeholder {
+            text-transform: none;
+            color: #bbb;
+        }
+        .neutral-eyedropper-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 6px;
+            background: #f8f8f8;
+            cursor: pointer;
+            color: #555;
+            flex-shrink: 0;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .neutral-eyedropper-btn:hover {
+            background: #eee;
+            border-color: rgba(0,0,0,0.25);
+            color: #333;
+        }
+        .neutral-eyedropper-btn:active {
+            background: #e0e0e0;
+        }
+        .neutral-eyedropper-btn.hidden {
+            display: none;
+        }
         .neutral-middle-row {
             display: flex;
             gap: 16px;
@@ -2285,7 +2354,7 @@
         
         /* Inherited settings */
         .setting-row.inherited {
-            opacity: 0.7;
+            border-left: 3px solid #ccc;
         }
         
         .setting-inherited {
@@ -2487,7 +2556,7 @@
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.2.4</span></h1>
+                <h1>Frappe Theme Editor <span style="font-size: 11px; font-weight: 400; color: #888; margin-left: 8px;">v0.9.3.0</span></h1>
                 <p>Theme editor for Frappe applications</p>
             </div>
             <div class="header-buttons">
@@ -2636,6 +2705,21 @@
                                 <div class="neutral-picker-sidebar">
                                     <!-- Grid at top (full width) -->
                                     <div class="neutral-color-grid" id="neutralColorGrid"></div>
+                                    <!-- Hex input + Eyedropper -->
+                                    <div class="neutral-hex-row">
+                                        <div class="neutral-hex-input-wrapper">
+                                            <span class="hex-prefix">#</span>
+                                            <input type="text" id="neutralHexInput" class="neutral-hex-input" maxlength="6" placeholder="Enter hex" spellcheck="false">
+                                        </div>
+                                        <button class="neutral-eyedropper-btn" id="neutralEyedropperBtn" title="Pick color from screen">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M2 22l1-1h3l9-9"></path>
+                                                <path d="M3 21v-3l9-9"></path>
+                                                <path d="M14.5 5.5l4-4a1.414 1.414 0 0 1 2 0l2 2a1.414 1.414 0 0 1 0 2l-4 4"></path>
+                                                <path d="M12 8l4 4"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <!-- Middle row: Swatch + Scale Bump -->
                                     <div class="neutral-middle-row">
                                         <div class="neutral-preview-swatch" id="neutralPreviewSwatch"></div>
@@ -2835,47 +2919,68 @@
                         <!-- Frappe Core Variables Section Header -->
                         <div class="setting-section-header">Frappe CSS Variables</div>
                         
-                        <!-- --primary (inherited) -->
-                        <div class="setting-row inherited">
+                        <!-- --primary (editable) -->
+                        <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--primary</span>
-                                <span class="setting-desc">Main brand color for buttons, links, active states</span>
-                                <span class="setting-inherited">↑ Inherits from Core Theme → Primary Hue (600 shade)</span>
+                                <span class="setting-name">Primary Color</span>
+                                <span class="setting-desc">Main brand color for buttons, links, active states (--primary)</span>
+                                <span class="setting-suggestion">💡 Suggest: primary-600 for standard Frappe look</span>
                             </div>
                             <div class="setting-control">
-                                <span class="inherited-value inherited-swatch" id="inherited-primary"></span>
+                                <div class="swatch-picker" id="picker-primaryColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-primaryColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">primary-600</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-primaryColor-dropdown"></div>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- --bg-color (inherited) -->
-                        <div class="setting-row inherited">
+                        <!-- --bg-color (editable) -->
+                        <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--bg-color</span>
-                                <span class="setting-desc">Page background color</span>
-                                <span class="setting-inherited">↑ Inherits from Core Theme → Page Background</span>
+                                <span class="setting-name">Page Background</span>
+                                <span class="setting-desc">Background color for the page/desk area (--bg-color)</span>
+                                <span class="setting-suggestion">💡 Suggest: neutral-100 for subtle off-white</span>
                             </div>
                             <div class="setting-control">
-                                <span class="inherited-value inherited-swatch" id="inherited-bg-color"></span>
+                                <div class="swatch-picker" id="picker-bgColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-bgColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">neutral-100</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-bgColor-dropdown"></div>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- --fg-color (inherited) -->
-                        <div class="setting-row inherited">
+                        <!-- --fg-color (editable) -->
+                        <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--fg-color</span>
-                                <span class="setting-desc">Card/panel/form background</span>
-                                <span class="setting-inherited">↑ Inherits from Core Theme → Panel Background</span>
+                                <span class="setting-name">Card Background</span>
+                                <span class="setting-desc">Background for cards, panels, and forms (--fg-color)</span>
+                                <span class="setting-suggestion">💡 Suggest: neutral-100 for clean cards</span>
                             </div>
                             <div class="setting-control">
-                                <span class="inherited-value inherited-swatch" id="inherited-fg-color"></span>
+                                <div class="swatch-picker" id="picker-fgColor">
+                                    <div class="swatch-picker-trigger" data-action="toggle-swatch-picker" data-target="picker-fgColor">
+                                        <div class="trigger-swatch"></div>
+                                        <span class="trigger-label">neutral-100</span>
+                                        <span class="trigger-arrow">▼</span>
+                                    </div>
+                                    <div class="swatch-picker-dropdown" id="picker-fgColor-dropdown"></div>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- --btn-default-bg (editable) -->
                         <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--btn-default-bg</span>
-                                <span class="setting-desc">Secondary/default button background</span>
+                                <span class="setting-name">Default Button Background</span>
+                                <span class="setting-desc">Secondary/default button background (--btn-default-bg)</span>
                                 <span class="setting-suggestion">💡 Suggest: primary-100 for contrast with primary buttons</span>
                             </div>
                             <div class="setting-control">
@@ -2893,8 +2998,8 @@
                         <!-- --control-bg (editable) -->
                         <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--control-bg</span>
-                                <span class="setting-desc">Input field background color</span>
+                                <span class="setting-name">Input Background</span>
+                                <span class="setting-desc">Background color for input fields (--control-bg)</span>
                                 <span class="setting-suggestion">💡 Suggest: neutral-50 for subtle contrast</span>
                             </div>
                             <div class="setting-control">
@@ -2911,38 +3016,6 @@
                         
                         <!-- UI Settings Section Header -->
                         <div class="setting-section-header" style="margin-top: 20px;">UI Settings</div>
-                        
-                        <!-- Navbar Theme -->
-                        <div class="setting-row">
-                            <div class="setting-label">
-                                <span class="setting-name">Navbar Theme</span>
-                                <span class="setting-desc">Top navigation bar color scheme</span>
-                                <span class="setting-suggestion">💡 Dark is standard Frappe look</span>
-                            </div>
-                            <div class="setting-control">
-                                <div class="swatch-picker" id="picker-navbarTheme">
-                                    <div class="swatch-picker-trigger" data-action="toggle-navbar-picker">
-                                        <div class="trigger-swatch" id="navbar-trigger-swatch"></div>
-                                        <span class="trigger-label" id="navbar-trigger-label">Dark</span>
-                                        <span class="trigger-arrow">▼</span>
-                                    </div>
-                                    <div class="swatch-picker-dropdown" id="picker-navbarTheme-dropdown">
-                                        <div class="swatch-picker-option selected" data-value="dark" data-action="select-navbar-theme">
-                                            <div class="option-swatch" style="background: #1a1a1a;"></div>
-                                            <div><div class="option-label">Dark</div><div class="option-desc">neutral-900</div></div>
-                                        </div>
-                                        <div class="swatch-picker-option" data-value="light" data-action="select-navbar-theme">
-                                            <div class="option-swatch" style="background: #ffffff; border: 1px solid #ddd;"></div>
-                                            <div><div class="option-label">Light</div><div class="option-desc">white</div></div>
-                                        </div>
-                                        <div class="swatch-picker-option" data-value="primary" data-action="select-navbar-theme">
-                                            <div class="option-swatch" id="navbar-primary-swatch"></div>
-                                            <div><div class="option-label">Primary</div><div class="option-desc">primary-700</div></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         
                         <!-- Alternate Rows -->
                         <div class="setting-row">
@@ -2968,7 +3041,7 @@
                         <div class="setting-row">
                             <div class="setting-label">
                                 <span class="setting-name">Alternate Row Color</span>
-                                <span class="setting-desc">Background color for every other row (zebra stripes)</span>
+                                <span class="setting-desc">Background color for every other row (--alternate-row-bg)</span>
                                 <span class="setting-suggestion">💡 Suggest: neutral-50 for subtle striping</span>
                             </div>
                             <div class="setting-control">
@@ -2987,7 +3060,7 @@
                         <div class="setting-row">
                             <div class="setting-label">
                                 <span class="setting-name">Row Hover Color</span>
-                                <span class="setting-desc">Background when mouse hovers over a row</span>
+                                <span class="setting-desc">Background when mouse hovers over a row (--row-hover-bg)</span>
                                 <span class="setting-suggestion">💡 Suggest: light (50-100) for subtle, non-distracting feedback</span>
                             </div>
                             <div class="setting-control">
@@ -3006,7 +3079,7 @@
                         <div class="setting-row">
                             <div class="setting-label">
                                 <span class="setting-name">Row Selection Color</span>
-                                <span class="setting-desc">Background for selected/checked rows</span>
+                                <span class="setting-desc">Background for selected/checked rows (--row-selection-bg)</span>
                                 <span class="setting-suggestion">💡 Suggest: primary (100-200) to clearly show selection</span>
                             </div>
                             <div class="setting-control">
@@ -3025,7 +3098,7 @@
                         <div class="setting-row">
                             <div class="setting-label">
                                 <span class="setting-name">Card Border Radius</span>
-                                <span class="setting-desc">Corner rounding for cards, modals, panels</span>
+                                <span class="setting-desc">Corner rounding for cards, modals, panels (--card-border-radius)</span>
                             </div>
                             <div class="setting-control">
                                 <div class="styled-menu" id="menu-cardBorderRadius">
@@ -3047,7 +3120,7 @@
                         <div class="setting-row">
                             <div class="setting-label">
                                 <span class="setting-name">Focus Ring Color</span>
-                                <span class="setting-desc">Glow around focused input fields (shows which field is active)</span>
+                                <span class="setting-desc">Glow around focused input fields (--focus-ring-color)</span>
                                 <span class="setting-suggestion">💡 Suggest: primary (100-300) for accessibility visibility</span>
                             </div>
                             <div class="setting-control">
@@ -3066,7 +3139,7 @@
                         <div class="setting-row">
                             <div class="setting-label">
                                 <span class="setting-name">Default Border Color</span>
-                                <span class="setting-desc">Standard border for inputs, cards, dividers</span>
+                                <span class="setting-desc">Standard border for inputs, cards, dividers (--border-color)</span>
                                 <span class="setting-suggestion">💡 Suggest: neutral (200-400) for clean, unobtrusive lines</span>
                             </div>
                             <div class="setting-control">
@@ -3087,8 +3160,8 @@
                         <!-- Border Radius (global) -->
                         <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--border-radius</span>
-                                <span class="setting-desc">Global corner radius for buttons, inputs, badges</span>
+                                <span class="setting-name">Border Radius</span>
+                                <span class="setting-desc">Global corner radius for buttons, inputs, badges (--border-radius)</span>
                             </div>
                             <div class="setting-control">
                                 <div class="styled-menu" id="menu-borderRadius">
@@ -3109,8 +3182,8 @@
                         <!-- Border Radius Large (dialogs/modals) -->
                         <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--border-radius-lg</span>
-                                <span class="setting-desc">Corner radius for dialogs, modals, cards</span>
+                                <span class="setting-name">Large Border Radius</span>
+                                <span class="setting-desc">Corner radius for dialogs, modals, cards (--border-radius-lg)</span>
                             </div>
                             <div class="setting-control">
                                 <div class="styled-menu" id="menu-borderRadiusLg">
@@ -3131,8 +3204,8 @@
                         <!-- Button Height -->
                         <div class="setting-row">
                             <div class="setting-label">
-                                <span class="setting-name">--btn-height</span>
-                                <span class="setting-desc">Standard button height (affects touch targets)</span>
+                                <span class="setting-name">Button Height</span>
+                                <span class="setting-desc">Standard button height, affects touch targets (--btn-height)</span>
                             </div>
                             <div class="setting-control">
                                 <div class="styled-menu" id="menu-btnHeight">
@@ -3166,7 +3239,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Header Background</span>
-                            <span class="setting-desc">Background color for column headers (.list-row-head)</span>
+                            <span class="setting-desc">Background color for column headers (--list-header-bg)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-100 for subtle contrast</span>
                         </div>
                         <div class="setting-control">
@@ -3185,7 +3258,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Header Text Color</span>
-                            <span class="setting-desc">Text color for column headers</span>
+                            <span class="setting-desc">Text color for column headers (--list-header-text)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-700 for readability</span>
                         </div>
                         <div class="setting-control">
@@ -3219,7 +3292,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Row Border Color</span>
-                            <span class="setting-desc">Divider line between rows</span>
+                            <span class="setting-desc">Divider line between rows (--list-row-border)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-200 for subtle separation</span>
                         </div>
                         <div class="setting-control">
@@ -3275,7 +3348,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Label Text Color</span>
-                            <span class="setting-desc">Color for field labels (.control-label)</span>
+                            <span class="setting-desc">Color for field labels (--form-label-color)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-700 for readability</span>
                         </div>
                         <div class="setting-control">
@@ -3309,7 +3382,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Section Background</span>
-                            <span class="setting-desc">Background for section headers (.section-head)</span>
+                            <span class="setting-desc">Background for section headers (--form-section-bg)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-300 for visible separation</span>
                         </div>
                         <div class="setting-control">
@@ -3328,7 +3401,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Section Text Color</span>
-                            <span class="setting-desc">Text color for section headers</span>
+                            <span class="setting-desc">Text color for section headers (--form-section-text)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-800 for emphasis</span>
                         </div>
                         <div class="setting-control">
@@ -3350,7 +3423,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Active Tab Color</span>
-                            <span class="setting-desc">Underline/highlight for active form tab</span>
+                            <span class="setting-desc">Underline/highlight for active form tab (--form-tab-active)</span>
                             <span class="setting-suggestion">💡 Suggest: primary-600 to match brand</span>
                         </div>
                         <div class="setting-control">
@@ -3371,8 +3444,8 @@
                     <!-- Checkbox Color -->
                     <div class="setting-row">
                         <div class="setting-label">
-                            <span class="setting-name">--checkbox-color</span>
-                            <span class="setting-desc">Check mark color for checkboxes and check icons</span>
+                            <span class="setting-name">Checkbox Color</span>
+                            <span class="setting-desc">Check mark color for checkboxes and check icons (--checkbox-color)</span>
                             <span class="setting-suggestion">💡 Suggest: primary-500 for brand consistency</span>
                         </div>
                         <div class="setting-control">
@@ -3487,7 +3560,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Blue (Info, In Progress)</span>
-                            <span class="setting-desc">.indicator.blue - Draft, In Progress, Info</span>
+                            <span class="setting-desc">Draft, In Progress, Info (--indicator-blue)</span>
                             <span class="setting-suggestion">💡 Suggest: primary-500 to match brand</span>
                         </div>
                         <div class="setting-control">
@@ -3506,7 +3579,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Purple (Custom)</span>
-                            <span class="setting-desc">.indicator.purple - Custom status</span>
+                            <span class="setting-desc">Custom status indicator (--indicator-purple)</span>
                             <span class="setting-suggestion">💡 Pick any color (Frappe default: #743ee2)</span>
                         </div>
                         <div class="setting-control">
@@ -3519,7 +3592,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Gray (Disabled, Closed)</span>
-                            <span class="setting-desc">.indicator.darkgrey - Disabled, Closed</span>
+                            <span class="setting-desc">Disabled, Closed indicator (--indicator-gray)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-400</span>
                         </div>
                         <div class="setting-control">
@@ -3542,28 +3615,13 @@
                 <div class="frappe-settings-grid">
                     
                     <!-- Section Header -->
-                    <div class="setting-section-header">Navbar (inherited)</div>
-                    
-                    <!-- Navbar Theme (inherited) -->
-                    <div class="setting-row inherited">
-                        <div class="setting-label">
-                            <span class="setting-name">Navbar Theme</span>
-                            <span class="setting-desc">Top navigation bar color scheme</span>
-                            <span class="setting-inherited">↑ Set in Common Elements</span>
-                        </div>
-                        <div class="setting-control">
-                            <span class="inherited-value inherited-swatch" id="inherited-nav-navbar"></span>
-                        </div>
-                    </div>
-                    
-                    <!-- Section Header -->
-                    <div class="setting-section-header" style="margin-top: 20px;">Sidebar</div>
+                    <div class="setting-section-header">Sidebar</div>
                     
                     <!-- Sidebar Background -->
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Sidebar Background</span>
-                            <span class="setting-desc">Background for desk sidebar (.desk-sidebar)</span>
+                            <span class="setting-desc">Background for desk sidebar (--sidebar-bg)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-50 or white</span>
                         </div>
                         <div class="setting-control">
@@ -3582,7 +3640,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Item Text Color</span>
-                            <span class="setting-desc">Text color for sidebar items</span>
+                            <span class="setting-desc">Text color for sidebar items (--sidebar-text)</span>
                             <span class="setting-suggestion">💡 Suggest: neutral-700</span>
                         </div>
                         <div class="setting-control">
@@ -3601,7 +3659,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Item Hover Background</span>
-                            <span class="setting-desc">Background when hovering sidebar item</span>
+                            <span class="setting-desc">Background when hovering sidebar item (--sidebar-hover)</span>
                             <span class="setting-suggestion">💡 Suggest: primary-50</span>
                         </div>
                         <div class="setting-control">
@@ -3620,7 +3678,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Active Item Background</span>
-                            <span class="setting-desc">Background for selected sidebar item</span>
+                            <span class="setting-desc">Background for selected sidebar item (--sidebar-active-bg)</span>
                             <span class="setting-suggestion">💡 Suggest: primary-100</span>
                         </div>
                         <div class="setting-control">
@@ -3639,7 +3697,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Active Item Text</span>
-                            <span class="setting-desc">Text color for selected sidebar item</span>
+                            <span class="setting-desc">Text color for selected sidebar item (--sidebar-active-text)</span>
                             <span class="setting-suggestion">💡 Suggest: primary-700</span>
                         </div>
                         <div class="setting-control">
@@ -3661,7 +3719,7 @@
                     <div class="setting-row">
                         <div class="setting-label">
                             <span class="setting-name">Result Hover Background</span>
-                            <span class="setting-desc">Background when hovering search result</span>
+                            <span class="setting-desc">Background when hovering search result (--awesomebar-hover)</span>
                             <span class="setting-suggestion">💡 Suggest: primary-50</span>
                         </div>
                         <div class="setting-control">
@@ -4039,14 +4097,6 @@
                 selectFontMenu(value);
                 break;
                 
-            // Navbar picker
-            case 'toggle-navbar-picker':
-                toggleNavbarPicker();
-                break;
-            case 'select-navbar-theme':
-                selectNavbarTheme(value);
-                break;
-                
             // Typography actions
             case 'toggle-bold':
                 toggleBold();
@@ -4140,6 +4190,7 @@
         
         // Initialize neutral picker
         buildNeutralGrid();
+        initNeutralHexInput();
         if (DOM.neutralPreviewSwatch) {
             DOM.neutralPreviewSwatch.style.backgroundColor = hsvToHex(210, 8, 62);
         }
@@ -4248,7 +4299,7 @@
         } else if (type === 'neutral') {
             const shades = CONFIG.neutralShades;
             const currentIdx = shades.findIndex(s => s.shade === shadeNum);
-            let config = shades.find(s => s.shade === shadeNum);
+            let config = shades[currentIdx];
             
             // Apply neutral offset (bump)
             if (state.neutralOffset && currentIdx !== -1) {
@@ -4256,7 +4307,17 @@
                 config = shades[shiftedIdx];
             }
             
-            if (config) return hslToHex(state.neutralHue, config.s, config.l);
+            if (config) {
+                if (state.neutralAnchorHex && state.neutralAnchorL !== null) {
+                    // Exact-color anchor mode: user chose a specific color
+                    if (shadeNum === 500 && !state.neutralOffset) return state.neutralAnchorHex;
+                    const anchor500 = shades.find(s => s.shade === 500);
+                    const lOffset = state.neutralAnchorL - anchor500.l;
+                    const adjustedL = Math.max(5, Math.min(98, config.l + lOffset));
+                    return hslToHex(state.neutralHue, state.neutralSat, adjustedL);
+                }
+                return hslToHex(state.neutralHue, config.s, config.l);
+            }
         }
         return '#cccccc';
     }
@@ -4273,8 +4334,8 @@
         // Always go darker from white container
         const newL = Math.max(5, baseL - lightnessChange);
         
-        // Return neutral gray (same saturation as neutral tokens: 5%)
-        return hslToHex(state.neutralHue, 5, newL);
+        const sat = state.neutralSat || 5;
+        return hslToHex(state.neutralHue, sat, newL);
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
@@ -4387,47 +4448,7 @@
         }
     }
     
-    function updateNavbarSwatch(theme) {
-        const swatch = document.getElementById('swatch-navbar');
-        if (!swatch) return;
-        
-        if (theme === 'dark') {
-            swatch.style.backgroundColor = getTokenColor('neutral-900');
-        } else if (theme === 'light') {
-            swatch.style.backgroundColor = '#ffffff';
-        } else if (theme === 'primary') {
-            swatch.style.backgroundColor = getTokenColor('primary-700');
-        }
-    }
-    
     function initFrappeSwatches() {
-        // Init navbar picker
-        initNavbarPicker();
-        
-        // Update inherited swatches from Core Theme
-        const primarySwatch = document.getElementById('inherited-primary');
-        if (primarySwatch) {
-            primarySwatch.style.backgroundColor = getTokenColor('primary-600');
-        }
-        
-        const bgSwatch = document.getElementById('inherited-bg-color');
-        if (bgSwatch) {
-            // Page background - read from Core Theme state
-            bgSwatch.style.backgroundColor = getTokenColor(state.pageBg);
-            if (state.pageBg === 'white') {
-                bgSwatch.style.border = '1px solid #ddd';
-            }
-        }
-        
-        const fgSwatch = document.getElementById('inherited-fg-color');
-        if (fgSwatch) {
-            // Panel/card background - read from Core Theme state
-            fgSwatch.style.backgroundColor = getTokenColor(state.panelBg);
-            if (state.panelBg === 'white') {
-                fgSwatch.style.border = '1px solid #ddd';
-            }
-        }
-        
         // Update inherited list swatches (from Common Elements)
         const listHoverSwatch = document.getElementById('inherited-list-hover');
         if (listHoverSwatch) {
@@ -4480,20 +4501,6 @@
         const indicatorOrange = document.getElementById('inherited-indicator-orange');
         if (indicatorOrange) {
             indicatorOrange.style.backgroundColor = hslToHex(state.warning.h, state.warning.s, state.warning.l);
-        }
-        
-        // Navigation inherited swatches
-        const navNavbar = document.getElementById('inherited-nav-navbar');
-        if (navNavbar) {
-            const theme = frappeState.navbarTheme;
-            if (theme === 'dark') {
-                navNavbar.style.backgroundColor = '#1a1a1a';
-            } else if (theme === 'light') {
-                navNavbar.style.backgroundColor = '#ffffff';
-                navNavbar.style.border = '1px solid #ddd';
-            } else {
-                navNavbar.style.backgroundColor = getTokenColor('primary-700');
-            }
         }
         
         // Update all swatch pickers
@@ -4654,37 +4661,6 @@
         const formBorder = document.getElementById('inherited-form-border');
         if (formBorder) formBorder.style.backgroundColor = getTokenColor(frappeState.defaultBorderColor);
         
-        // Navbar inherited in Navigation
-        const navNavbar = document.getElementById('inherited-nav-navbar');
-        if (navNavbar) {
-            const theme = frappeState.navbarTheme;
-            navNavbar.style.border = 'none';
-            if (theme === 'dark') {
-                navNavbar.style.backgroundColor = '#1a1a1a';
-            } else if (theme === 'light') {
-                navNavbar.style.backgroundColor = '#ffffff';
-                navNavbar.style.border = '1px solid #ddd';
-            } else {
-                navNavbar.style.backgroundColor = getTokenColor('primary-700');
-            }
-        }
-        
-        // Core Theme inherited in Frappe CSS Variables
-        const primarySwatch = document.getElementById('inherited-primary');
-        if (primarySwatch) primarySwatch.style.backgroundColor = getTokenColor('primary-600');
-        
-        const bgSwatch = document.getElementById('inherited-bg-color');
-        if (bgSwatch) {
-            bgSwatch.style.backgroundColor = getTokenColor(state.pageBg);
-            bgSwatch.style.border = state.pageBg === 'white' ? '1px solid #ddd' : 'none';
-        }
-        
-        const fgSwatch = document.getElementById('inherited-fg-color');
-        if (fgSwatch) {
-            fgSwatch.style.backgroundColor = getTokenColor(state.panelBg);
-            fgSwatch.style.border = state.panelBg === 'white' ? '1px solid #ddd' : 'none';
-        }
-        
         // Print inherited
         const printAlternate = document.getElementById('inherited-print-alternate');
         if (printAlternate) printAlternate.style.backgroundColor = getTokenColor(frappeState.alternateRowColor);
@@ -4721,74 +4697,6 @@
             if (dropdown.classList.contains('active')) {
                 buildSwatchGrid(dropdown, pickerId, stateKey);
             }
-        }
-    }
-    
-    // Navbar Theme Picker Functions
-    function toggleNavbarPicker() {
-        const dropdown = document.getElementById('picker-navbarTheme-dropdown');
-        const isOpen = dropdown.classList.contains('open');
-        
-        // Close all dropdowns first
-        document.querySelectorAll('.swatch-picker-dropdown').forEach(d => d.classList.remove('open'));
-        
-        if (!isOpen) {
-            // Update primary swatch color
-            const primarySwatch = document.getElementById('navbar-primary-swatch');
-            if (primarySwatch) {
-                primarySwatch.style.backgroundColor = getTokenColor('primary-700');
-            }
-            dropdown.classList.add('open');
-        }
-    }
-    
-    function selectNavbarTheme(value, label) {
-        frappeState.navbarTheme = value;
-        
-        // Update trigger
-        const triggerSwatch = document.getElementById('navbar-trigger-swatch');
-        const triggerLabel = document.getElementById('navbar-trigger-label');
-        
-        if (value === 'dark') {
-            triggerSwatch.style.backgroundColor = '#1a1a1a';
-        } else if (value === 'light') {
-            triggerSwatch.style.backgroundColor = '#ffffff';
-            triggerSwatch.style.border = '1px solid #ddd';
-        } else {
-            triggerSwatch.style.backgroundColor = getTokenColor('primary-700');
-            triggerSwatch.style.border = 'none';
-        }
-        triggerLabel.textContent = label;
-        
-        // Update selected state
-        document.querySelectorAll('#picker-navbarTheme-dropdown .swatch-picker-option').forEach(opt => {
-            opt.classList.toggle('selected', opt.dataset.value === value);
-        });
-        
-        // Close dropdown
-        document.getElementById('picker-navbarTheme-dropdown').classList.remove('open');
-        
-        // Update inherited swatches that depend on this
-        updateInheritedSwatches();
-        
-        updateThemeButtons();
-    }
-    
-    function initNavbarPicker() {
-        const value = frappeState.navbarTheme;
-        const triggerSwatch = document.getElementById('navbar-trigger-swatch');
-        const triggerLabel = document.getElementById('navbar-trigger-label');
-        
-        if (value === 'dark') {
-            triggerSwatch.style.backgroundColor = '#1a1a1a';
-            triggerLabel.textContent = 'Dark';
-        } else if (value === 'light') {
-            triggerSwatch.style.backgroundColor = '#ffffff';
-            triggerSwatch.style.border = '1px solid #ddd';
-            triggerLabel.textContent = 'Light';
-        } else {
-            triggerSwatch.style.backgroundColor = getTokenColor('primary-700');
-            triggerLabel.textContent = 'Primary';
         }
     }
     
@@ -5114,14 +5022,12 @@
                 "shades": {
                     "$description": "Full neutral shade scale - all available for designer use",
                     ...Object.fromEntries(
-                        CONFIG.neutralShades.map(({shade, s, l}) => {
-                            const saturation = state.neutralHue === -1 ? 0 : s;
-                            const hue = state.neutralHue === -1 ? 0 : state.neutralHue;
+                        CONFIG.neutralShades.map(({shade}) => {
                             return [
                                 shade.toString(),
                                 {
                                     "$type": "color",
-                                    "$value": hslToHex(hue, saturation, l + (state.neutralOffset || 0))
+                                    "$value": getTokenColor('neutral-' + shade)
                                 }
                             ];
                         })
@@ -5309,8 +5215,7 @@
                     },
                     "navigation": {
                         "description": "Sidebar and Awesomebar styling",
-                        "sidebar": "Use neutral backgrounds with primary accents for active items",
-                        "navbar": "Dark theme recommended for contrast with content area"
+                        "sidebar": "Use neutral backgrounds with primary accents for active items"
                     },
                     "indicators": {
                         "description": "Status badge colors for workflow states",
@@ -5348,13 +5253,6 @@
                 return getTokenColor(token);
             };
             
-            // Get navbar background based on theme
-            const getNavbarBg = () => {
-                if (frappeState.navbarTheme === 'dark') return '#1a1a1a';
-                if (frappeState.navbarTheme === 'light') return '#ffffff';
-                return getTokenColor('primary-700');
-            };
-            
             // Frappe CSS Variables - EXACT names for Python script
             // All values resolved to hex, all inherited values included
             theme.frappeCSS = {
@@ -5364,11 +5262,11 @@
                 // ─────────────────────────────────────────────────────────────
                 // CORE (from Core Theme - repeated here for completeness)
                 // ─────────────────────────────────────────────────────────────
-                "--primary": resolveColor('primary-500'),
+                "--primary": resolveColor(frappeState.primaryColor),
                 "--primary-light": resolveColor('primary-100'),
                 "--primary-dark": resolveColor('primary-700'),
-                "--bg-color": resolveColor(state.pageBg),
-                "--fg-color": resolveColor(state.panelBg),
+                "--bg-color": resolveColor(frappeState.bgColor),
+                "--fg-color": resolveColor(frappeState.fgColor),
                 
                 // Semantic colors (from Core Theme)
                 "--green": hslToHex(state.success.h, state.success.s, 50),
@@ -5389,7 +5287,6 @@
                 // ─────────────────────────────────────────────────────────────
                 // COMMON ELEMENTS
                 // ─────────────────────────────────────────────────────────────
-                "--navbar-bg": getNavbarBg(),
                 "--control-bg": resolveColor(frappeState.controlBg),
                 "--btn-default-bg": resolveColor(frappeState.btnDefaultBg),
                 "--focus-ring-color": resolveColor(frappeState.focusRingColor),
@@ -6076,12 +5973,6 @@
             return getTokenColor(token);
         };
         
-        const getNavbarBg = () => {
-            if (frappeState.navbarTheme === 'dark') return '#1a1a1a';
-            if (frappeState.navbarTheme === 'light') return '#ffffff';
-            return getTokenColor('primary-700');
-        };
-        
         const theme = {
             "$name": themeName,
             "$description": "NCE Design System theme for business web applications and Frappe applications. Hue-based color system with AI agent guidance.",
@@ -6262,11 +6153,11 @@
                 "$usage": "Python script reads these directly into app CSS",
                 
                 // Core
-                "--primary": resolveColor('primary-500'),
+                "--primary": resolveColor(frappeState.primaryColor),
                 "--primary-light": resolveColor('primary-100'),
                 "--primary-dark": resolveColor('primary-700'),
-                "--bg-color": resolveColor(state.pageBg),
-                "--fg-color": resolveColor(state.panelBg),
+                "--bg-color": resolveColor(frappeState.bgColor),
+                "--fg-color": resolveColor(frappeState.fgColor),
                 
                 // Semantic
                 "--green": hslToHex(state.success.h, state.success.s, 50),
@@ -6283,7 +6174,6 @@
                 "--card-border-radius": frappeState.cardBorderRadius,
                 
                 // Common Elements
-                "--navbar-bg": getNavbarBg(),
                 "--control-bg": resolveColor(frappeState.controlBg),
                 "--btn-default-bg": resolveColor(frappeState.btnDefaultBg),
                 "--focus-ring-color": resolveColor(frappeState.focusRingColor),
@@ -6375,7 +6265,6 @@
             lines.push(`  --card-border-radius: ${css['--card-border-radius']};`);
             lines.push('');
             lines.push('  /* Common Elements */');
-            lines.push(`  --navbar-bg: ${css['--navbar-bg']};`);
             lines.push(`  --control-bg: ${css['--control-bg']};`);
             lines.push(`  --btn-default-bg: ${css['--btn-default-bg']};`);
             lines.push(`  --focus-ring-color: ${css['--focus-ring-color']};`);
@@ -6517,6 +6406,9 @@
         anchorOffset: 0,          // bump offset from initial anchor
         shadeOffset: 0,           // quantum shift for non-anchor mode
         neutralHue: 210,
+        neutralAnchorHex: null,   // exact hex for neutral-500 (from hex input/eyedropper)
+        neutralSat: null,         // saturation override from exact color pick
+        neutralAnchorL: null,     // lightness of the anchor hex
         pageBg: 'neutral-100',
         panelBg: 'neutral-200',
         nestedPanelDirection: 'lighter',  // nested panels go lighter (Apple HIG style)
@@ -6543,7 +6435,9 @@
     // ═══════════════════════════════════════════════════════════════════════════
     const DEFAULT_FRAPPE_STATE = {
         // Common Elements
-        navbarTheme: 'dark',
+        primaryColor: 'primary-600',
+        bgColor: 'neutral-100',
+        fgColor: 'neutral-100',
         alternateRows: true,
         alternateRowColor: 'neutral-50',
         btnDefaultBg: 'primary-100',
@@ -6749,8 +6643,8 @@
         
         // Neutral grid
         let neutralHTML = '';
-        CONFIG.neutralShades.forEach(({ shade, s, l }) => {
-            const hex = hslToHex(state.neutralHue, s, l);
+        CONFIG.neutralShades.forEach(({ shade }) => {
+            const hex = getTokenColor('neutral-' + shade);
             neutralHTML += createScaleSwatch('neutral', shade, hex);
         });
         document.getElementById('neutralGrid').innerHTML = neutralHTML;
@@ -6948,8 +6842,8 @@
         const containerBorder = hslToHex(state.primaryHue, 70, 45); // primary-600
         const nestedPanelBg = getNestedPanelColor(1);            // 4% darker than white
         const nestedPanelBg2 = getNestedPanelColor(2);           // 8% darker than white
-        const textColor = hslToHex(state.neutralHue, 10, 15);
-        const mutedText = hslToHex(state.neutralHue, 5, 45);
+        const textColor = hslToHex(state.neutralHue, state.neutralSat || 10, 15);
+        const mutedText = hslToHex(state.neutralHue, state.neutralSat || 5, 45);
         const successHex = hslToHex(state.success.h, state.success.s, Math.min(state.success.l, 45));
         
         document.documentElement.style.setProperty('--accent-color', accentHex);
@@ -6998,19 +6892,20 @@
         const bottomNL = Math.max(50, baseNL - 8);
         
         const primaryS = state.primarySat || 85;
+        const neutralS = state.neutralSat || defaultNeutral.s;
         let btnGradient, btnSecGradient;
         if (isFlat) {
             btnGradient = `hsl(${state.primaryHue}, ${primaryS}%, ${midL}%)`;
-            btnSecGradient = `hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${midNL}%)`;
+            btnSecGradient = `hsl(${state.neutralHue}, ${neutralS}%, ${midNL}%)`;
         } else {
             btnGradient = `linear-gradient(${g.angle}deg, 
                 hsl(${state.primaryHue}, ${primaryS}%, ${topL}%) 0%, 
                 hsl(${state.primaryHue}, ${primaryS}%, ${midL}%) 50%, 
                 hsl(${state.primaryHue}, ${primaryS}%, ${bottomL}%) 100%)`;
             btnSecGradient = `linear-gradient(${g.angle}deg, 
-                hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${topNL}%) 0%, 
-                hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${midNL}%) 50%, 
-                hsl(${state.neutralHue}, ${defaultNeutral.s}%, ${bottomNL}%) 100%)`;
+                hsl(${state.neutralHue}, ${neutralS}%, ${topNL}%) 0%, 
+                hsl(${state.neutralHue}, ${neutralS}%, ${midNL}%) 50%, 
+                hsl(${state.neutralHue}, ${neutralS}%, ${bottomNL}%) 100%)`;
         }
         
         // Text color - use user-defined textFlipShade threshold
@@ -7040,7 +6935,7 @@
         // No inline style manipulation needed!
 
         // Secondary button gradient (neutral colors)
-        const btnSecBgHex = hslToHex(state.neutralHue, defaultNeutral.s, midNL);
+        const btnSecBgHex = hslToHex(state.neutralHue, neutralS, midNL);
         const btnSecText = getContrastTextColor(btnSecBgHex);
         
         document.documentElement.style.setProperty('--btn-secondary-gradient', btnSecGradient);
@@ -7467,7 +7362,6 @@
             updateSwatchPicker(picker);
         });
         updateInheritedSwatches();
-        initNavbarPicker(); // Update navbar theme trigger if showing primary
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
@@ -7491,8 +7385,8 @@
         
         css += `\n    /* Neutral Colors */\n`;
         css += `    --neutral-hue: ${state.neutralHue};\n`;
-        CONFIG.neutralShades.forEach(({ shade, s, l }) => {
-            css += `    --neutral-${shade}: ${hslToHex(state.neutralHue, s, l)};\n`;
+        CONFIG.neutralShades.forEach(({ shade }) => {
+            css += `    --neutral-${shade}: ${getTokenColor('neutral-' + shade)};\n`;
         });
         css += `\n    /* Neutral Defaults */\n`;
         css += `    --neutral: var(--neutral-${state.defaultShade});\n`;
@@ -7680,13 +7574,6 @@
                 if (css['--border-radius-lg']) frappeState.borderRadiusLg = css['--border-radius-lg'];
                 if (css['--btn-height']) frappeState.btnHeight = css['--btn-height'];
                 if (css['--card-border-radius']) frappeState.cardBorderRadius = css['--card-border-radius'];
-                
-                // Navbar theme (detect from hex)
-                if (css['--navbar-bg']) {
-                    if (css['--navbar-bg'] === '#1a1a1a') frappeState.navbarTheme = 'dark';
-                    else if (css['--navbar-bg'] === '#ffffff') frappeState.navbarTheme = 'light';
-                    else frappeState.navbarTheme = 'primary';
-                }
                 
                 // Indicators (purple is direct hex)
                 if (css['--indicator-purple']) frappeState.indicatorPurple = css['--indicator-purple'];
@@ -8055,6 +7942,9 @@
     // ═══════════════════════════════════════════════════════════════════════════
 
     var neutralSelectedHue = 210;
+    var neutralSelectedSat = null;
+    var neutralSelectedAnchorHex = null;
+    var neutralSelectedAnchorL = null;
     var neutralSelectedCell = null;
 
     function buildNeutralGrid() {
@@ -8100,13 +7990,23 @@
     function selectNeutralCell(cell, hue, hex) {
         if (neutralSelectedCell) neutralSelectedCell.classList.remove('selected');
         neutralSelectedCell = cell;
-        cell.classList.add('selected');
+        if (cell) cell.classList.add('selected');
         neutralSelectedHue = hue;
+        neutralSelectedSat = null;
+        neutralSelectedAnchorHex = null;
+        neutralSelectedAnchorL = null;
         document.getElementById('neutralPreviewSwatch').style.backgroundColor = hex;
+        var hexInput = document.getElementById('neutralHexInput');
+        if (hexInput) {
+            hexInput.value = hex.replace('#', '').toUpperCase();
+        }
     }
 
     function applyNeutralColor() {
         state.neutralHue = neutralSelectedHue;
+        state.neutralSat = neutralSelectedSat;
+        state.neutralAnchorHex = neutralSelectedAnchorHex;
+        state.neutralAnchorL = neutralSelectedAnchorL;
         state.neutralOffset = 0;
         document.getElementById('neutralBumpIndicator').textContent = '0';
         updateNeutralBumpButtons();
@@ -8128,6 +8028,65 @@
         var offset = state.neutralOffset || 0;
         lighterBtn.disabled = (offset <= -5);
         darkerBtn.disabled = (offset >= 5);
+    }
+
+    function applyNeutralFromHex(hexStr) {
+        hexStr = hexStr.replace('#', '').trim();
+        if (!/^[0-9a-fA-F]{6}$/.test(hexStr)) return;
+        var fullHex = '#' + hexStr.toUpperCase();
+        var hsl = hexToHSL(fullHex);
+        if (neutralSelectedCell) neutralSelectedCell.classList.remove('selected');
+        neutralSelectedCell = null;
+        neutralSelectedHue = hsl.h;
+        neutralSelectedSat = hsl.s;
+        neutralSelectedAnchorHex = fullHex;
+        neutralSelectedAnchorL = hsl.l;
+        document.getElementById('neutralPreviewSwatch').style.backgroundColor = fullHex;
+    }
+
+    function activateNeutralEyedropper() {
+        if (!window.EyeDropper) return;
+        var dropper = new EyeDropper();
+        dropper.open().then(function(result) {
+            var hex = result.sRGBHex;
+            var hexInput = document.getElementById('neutralHexInput');
+            if (hexInput) hexInput.value = hex.replace('#', '').toUpperCase();
+            applyNeutralFromHex(hex);
+        }).catch(function() {
+            // User cancelled or error - do nothing
+        });
+    }
+
+    function initNeutralHexInput() {
+        var hexInput = document.getElementById('neutralHexInput');
+        var eyedropperBtn = document.getElementById('neutralEyedropperBtn');
+
+        if (hexInput) {
+            hexInput.addEventListener('input', function() {
+                var val = this.value.replace(/[^0-9a-fA-F]/g, '').substring(0, 6);
+                this.value = val.toUpperCase();
+                if (val.length === 6) {
+                    applyNeutralFromHex(val);
+                }
+            });
+            hexInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    var val = this.value.replace(/[^0-9a-fA-F]/g, '').substring(0, 6);
+                    if (val.length === 6) {
+                        applyNeutralFromHex(val);
+                    }
+                }
+            });
+        }
+
+        if (eyedropperBtn) {
+            if (!window.EyeDropper) {
+                eyedropperBtn.classList.add('hidden');
+            } else {
+                eyedropperBtn.addEventListener('click', activateNeutralEyedropper);
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
