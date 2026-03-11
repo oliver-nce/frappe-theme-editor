@@ -20,7 +20,6 @@ app_license = "MIT"
 # Include CSS files in header of desk.html
 app_include_css = [
 	"/assets/frappe_theme_editor/css/nce_theme.css",
-	"/files/nce_theme_override.css",
 ]
 
 # Include JS files in header of desk.html
@@ -88,13 +87,8 @@ after_migrate = [
 	"frappe_theme_editor.boot.reapply_theme_after_migrate"
 ]
 
-# Website Context (portal CSS)
-# ----------------------------
-website_context = {
-	"include_css": [
-		"/files/nce_theme_override.css"
-	]
-}
+# Website Context (portal CSS — theme injected via boot_session + JS)
+# -------------------------------------------------------------------
 
 # After Install (sync desktop icons so Theme Editor appears in sidebar)
 # -------------------------------------------------------------------

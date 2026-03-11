@@ -6242,7 +6242,9 @@
             lines.push(`/* Generated: ${new Date().toISOString()} */`);
             lines.push('/* To revert: delete contents of this file and run bench clear-cache */');
             lines.push('');
-            lines.push(':root {');
+            lines.push(':root,');
+            lines.push('[data-theme="light"],');
+            lines.push('[data-theme="dark"] {');
             lines.push('  /* Core */');
             lines.push(`  --primary: ${css['--primary']};`);
             lines.push(`  --primary-light: ${css['--primary-light']};`);

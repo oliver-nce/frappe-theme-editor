@@ -46,6 +46,7 @@ def reapply_theme_after_migrate():
                 css_content = _build_css_from_variables(frappe_css)
 
         if css_content:
+            css_content = _upgrade_selector(css_content)
             _write_theme_css(css_content)
             frappe.logger().info(
                 f"NCE Theme re-applied after migrate: {selector.active_theme}"
@@ -77,9 +78,24 @@ def _get_theme_css_path():
     return frappe.get_site_path("public", "files", "nce_theme_override.css")
 
 
+def _upgrade_selector(css_content):
+    """Replace bare :root { with compound selector matching Frappe's specificity."""
+    import re
+    return re.sub(
+        r':root\s*\{',
+        ':root,\n[data-theme="light"],\n[data-theme="dark"] {',
+        css_content
+    )
+
+
 def _build_css_from_variables(frappe_css):
-    """Build :root CSS from frappeCSS key-value pairs."""
-    lines = ["/* NCE Theme - Auto-generated */", ":root {"]
+    """Build CSS from frappeCSS key-value pairs with correct specificity."""
+    lines = [
+        "/* NCE Theme - Auto-generated */",
+        ":root,",
+        '[data-theme="light"],',
+        '[data-theme="dark"] {'
+    ]
     for key, value in frappe_css.items():
         if key.startswith("$"):
             continue

@@ -42,6 +42,8 @@ def apply_theme(theme_name):
         else:
             frappe.throw(f"Theme '{theme_name}' has no CSS data (no frappeStylesheet or frappeCSS).")
 
+    css_content = _boost_selector_specificity(css_content)
+
     # Write the CSS file to the site's public directory
     _write_theme_css(css_content)
 
@@ -119,14 +121,26 @@ def preview_theme(theme_name):
     return {"css": css_content}
 
 
+def _boost_selector_specificity(css_content):
+    """
+    Replace bare :root { with compound selector that matches Frappe's
+    own :root, [data-theme="light"] specificity so load order wins.
+    """
+    import re
+    return re.sub(
+        r':root\s*\{',
+        ':root,\n[data-theme="light"],\n[data-theme="dark"] {',
+        css_content
+    )
+
+
 def _build_css_from_variables(frappe_css):
-    """
-    Build a :root CSS block from the frappeCSS key-value pairs.
-    Skips keys that start with $ (metadata).
-    """
+    """Build CSS from frappeCSS key-value pairs with correct specificity."""
     lines = [
         "/* NCE Theme - Auto-generated from frappeCSS variables */",
-        ":root {"
+        ":root,",
+        '[data-theme="light"],',
+        '[data-theme="dark"] {'
     ]
     for key, value in frappe_css.items():
         if key.startswith("$"):
