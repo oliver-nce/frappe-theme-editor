@@ -79,7 +79,7 @@ fixtures = [
 
 # Boot Info
 # ---------
-boot_session = "frappe_theme_editor.boot.boot_session"
+extend_bootinfo = "frappe_theme_editor.boot.boot_session"
 
 # After Migrate
 # -------------
