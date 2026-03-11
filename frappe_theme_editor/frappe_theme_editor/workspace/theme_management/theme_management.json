@@ -1,6 +1,6 @@
 {
   "charts": [],
-  "content": "[{\"id\":\"heading-1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Theme Management</b></span>\",\"col\":12}},{\"id\":\"shortcut-1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme Selector\",\"col\":4}},{\"id\":\"shortcut-2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"All Themes\",\"col\":4}},{\"id\":\"spacer-1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"heading-2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h6\\\">Quick Links</span>\",\"col\":12}},{\"id\":\"link-1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Theme\",\"col\":4}}]",
+  "content": "[{\"id\":\"heading-1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Theme Management</b></span>\",\"col\":12}},{\"id\":\"shortcut-1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme Selector\",\"col\":4}},{\"id\":\"shortcut-2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"All Themes\",\"col\":4}},{\"id\":\"shortcut-3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme Editor\",\"col\":4}},{\"id\":\"spacer-1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"heading-2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h6\\\">Quick Links</span>\",\"col\":12}},{\"id\":\"link-1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Theme\",\"col\":4}}]",
   "creation": "2026-03-10 00:00:00.000000",
   "custom_blocks": [],
   "doctype": "Workspace",
@@ -9,7 +9,7 @@
   "icon": "color",
   "idx": 0,
   "is_hidden": 0,
-  "label": "Theme Editor",
+  "label": "Theme Management",
   "links": [
     {
       "hidden": 0,
@@ -44,7 +44,7 @@
   "modified": "2026-03-10 00:00:00.000000",
   "modified_by": "Administrator",
   "module": "Frappe Theme Editor",
-  "name": "Theme Editor",
+  "name": "Theme Management",
   "number_cards": [],
   "owner": "Administrator",
   "parent_page": "",
@@ -68,6 +68,13 @@
       "type": "DocType"
     },
     {
+      "color": "Orange",
+      "doc_view": "",
+      "label": "Theme Editor",
+      "link_to": "theme-editor",
+      "type": "Page"
+    },
+    {
       "color": "Green",
       "doc_view": "New",
       "label": "New Theme",
@@ -75,5 +82,5 @@
       "type": "DocType"
     }
   ],
-  "title": "Theme Editor"
+  "title": "Theme Management"
 }
